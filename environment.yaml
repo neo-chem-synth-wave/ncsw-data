@@ -10,4 +10,5 @@ dependencies:
   - requests
   - tqdm
   - pip:
+      - ord-schema
       - pqdm
