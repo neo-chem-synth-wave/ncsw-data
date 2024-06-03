@@ -1,0 +1,13 @@
+name: ncsw-data
+
+channels:
+  - conda-forge
+
+dependencies:
+  - pip
+  - py7zr
+  - rdkit
+  - requests
+  - tqdm
+  - pip:
+      - pqdm
