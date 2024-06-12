@@ -10,8 +10,8 @@ proven difficult to achieve. In recent years, however, utilizing machine learnin
 with novel approaches emerging frequently. Unfortunately, the necessary data is of poor quality and quantity, stored in
 various formats, or published behind a paywall, which can be a significant barrier to entry for researchers. The main
 objective of the **NeoChemSynthWave: Data** project is to alleviate this barrier by systematically curating and
-facilitating access to open-source computer-assisted chemical synthesis data sources through a Python package titled
-[ncsw_data](/ncsw_data).
+facilitating access to open-source computer-assisted chemical synthesis data sources through a comprehensive and
+easy-to-understand Python package titled [ncsw_data](/ncsw_data).
 
 
 ## Installation
