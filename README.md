@@ -202,36 +202,37 @@ feedback, feel free to use [GitHub Issues](https://github.com/neo-chem-synth-wav
 
 
 ## References
-**[1]** Zdrazil, B., Felix, E., Hunter, F., Manners, E.J., Blackshaw, J., Corbett, S., de Veij, M., Ioannidis, H.,
-Lopez, D.M., Mosquera, J.F., Magarinos, M.P., Bosc, N., Arcila, R., Kizilören, T., Gaulton, A., Bento, A.P.,
-Adasme, M.F., Monecke, P., Landrum, G.A., and Leach, A.R. **The ChEMBL Database in 2023: A Drug Discovery Platform
-Spanning Multiple Bioactivity Data Types and Time Periods**, _Nucleic Acids Research_, 52, D1, 2024, D1180-D1192.
-DOI: https://doi.org/10.1093/nar/gkad1004.
+**[[1]](https://doi.org/10.1093/nar/gkad1004)** Zdrazil, B., Felix, E., Hunter, F., Manners, E.J., Blackshaw, J.,
+Corbett, S., de Veij, M., Ioannidis, H., Lopez, D.M., Mosquera, J.F., Magarinos, M.P., Bosc, N., Arcila, R.,
+Kizilören, T., Gaulton, A., Bento, A.P., Adasme, M.F., Monecke, P., Landrum, G.A., and Leach, A.R. **The ChEMBL Database
+in 2023: A Drug Discovery Platform Spanning Multiple Bioactivity Data Types and Time Periods**,
+_Nucleic Acids Research_, 52, D1, 2024, D1180-D1192.
 
-**[2]** Irwin, J.J., Tang, K.G., Young, J., Dandarchuluun, C., Wong, B.R., Khurelbaatar, M., Moroz, Y.S., Mayfield, J.,
-and Sayle, R.A. **ZINC20 - A Free Ultralarge-Scale Chemical Database for Ligand Discovery**. _J. Chem. Inf. Model._,
-2020, 60, 12, 6065-6073. DOI: https://doi.org/10.1021/acs.jcim.0c00675.
+**[[2]](https://doi.org/10.1021/acs.jcim.0c00675)** Irwin, J.J., Tang, K.G., Young, J., Dandarchuluun, C., Wong, B.R.,
+Khurelbaatar, M., Moroz, Y.S., Mayfield, J., and Sayle, R.A. **ZINC20 - A Free Ultralarge-Scale Chemical Database for
+Ligand Discovery**. _J. Chem. Inf. Model._, 2020, 60, 12, 6065-6073.
 
-**[3]** Lowe, D.M. **Extraction of Chemical Structures and Reactions from the Literature**. _Ph.D. Thesis, University of
-Cambridge, Department of Chemistry, Pembroke College_, 2012. DOI: https://doi.org/10.17863/CAM.16293.
+**[[3]](https://doi.org/10.17863/CAM.16293)** Lowe, D.M. **Extraction of Chemical Structures and Reactions from the
+Literature**. _Ph.D. Thesis, University of Cambridge, Department of Chemistry, Pembroke College_, 2012.
 
-**[4]** Kearnes, S.M., Maser, M.R., Wleklinski, M., Kast, A., Doyle, A.G., Dreher, S.D., Hawkins, J.M., Jensen, K.F.,
-and Coley, C.W. **The Open Reaction Database**. _J. Am. Chem. Soc._, 2021, 143, 45, 18820–18826.
-DOI: https://doi.org/10.1021/jacs.1c09820.
+**[[4]](https://doi.org/10.1021/jacs.1c09820)** Kearnes, S.M., Maser, M.R., Wleklinski, M., Kast, A., Doyle, A.G.,
+Dreher, S.D., Hawkins, J.M., Jensen, K.F., and Coley, C.W. **The Open Reaction Database**. _J. Am. Chem. Soc._, 2021,
+143, 45, 18820–18826.
 
-**[5]** **The Chemical Reaction Database (CRD)**: https://kmt.vander-lingen.nl. Accessed on: June 1st, 2024.
+**[[5]](https://kmt.vander-lingen.nl)** **The Chemical Reaction Database (CRD)**: https://kmt.vander-lingen.nl. Accessed
+on: June 1st, 2024.
 
-**[6]** Bansal, P., Morgat, A., Axelsen, K.B., Muthukrishnan, V., Coudert, E., Aimo, L., Hyka-Nouspikel, N.,
-Gasteiger, E., Kerhornou, A., Neto, T.B., Pozzato, M., Blatter, M., Ignatchenko, A., Redaschi, N., and Bridge, A.
-**Rhea, the Reaction Knowledgebase in 2022**, _Nucleic Acids Research_, 50, D1, 2022, D693–D700.
-DOI: https://doi.org/10.1093/nar/gkab1016.
+**[[6]](https://doi.org/10.1093/nar/gkab1016)** Bansal, P., Morgat, A., Axelsen, K.B., Muthukrishnan, V., Coudert, E.,
+Aimo, L., Hyka-Nouspikel, N., Gasteiger, E., Kerhornou, A., Neto, T.B., Pozzato, M., Blatter, M., Ignatchenko, A.,
+Redaschi, N., and Bridge, A. **Rhea, the Reaction Knowledgebase in 2022**, _Nucleic Acids Research_, 50, D1, 2022,
+D693–D700.
 
-**[7]** Grambow, C.A., Pattanaik, L., and Green, W.H. **Reactants, Products, and Transition States of Elementary
-Chemical Reactions based on Quantum Chemistry**. _Sci. Data_, 7, 137, 2020.
-DOI: https://doi.org/10.1038/s41597-020-0460-4.
+**[[7]](https://doi.org/10.1038/s41597-020-0460-4)** Grambow, C.A., Pattanaik, L., and Green, W.H. **Reactants,
+Products, and Transition States of Elementary Chemical Reactions based on Quantum Chemistry**. _Sci. Data_, 7,
+137, 2020.
 
-**[8]** Spiekermann, K., Pattanaik, L., and Green, W.H. **Fast Predictions of Reaction Barrier Heights: Toward
-Coupled-cluster Accuracy**. _Sci. Data_, 9, 417, 2022. DOI: https://doi.org/10.1038/s41597-022-01529-6.
+**[[8]](https://doi.org/10.1038/s41597-022-01529-6)** Spiekermann, K., Pattanaik, L., and Green, W.H. **Fast Predictions
+of Reaction Barrier Heights: Toward Coupled-cluster Accuracy**. _Sci. Data_, 9, 417, 2022.
 
-**[9]** Duigou, T., du Lac, M., Carbonell, P., and Faulon, J. **RetroRules: A Database of Reaction Rules for Engineering
-Biology**. _Nucleic Acids Research_, 2018, 47, D1, D1229–D1235. DOI: https://doi.org/10.1093/nar/gky940.
+**[[9]](https://doi.org/10.1093/nar/gky940)** Duigou, T., du Lac, M., Carbonell, P., and Faulon, J. **RetroRules: A
+Database of Reaction Rules for Engineering Biology**. _Nucleic Acids Research_, 2018, 47, D1, D1229–D1235.
