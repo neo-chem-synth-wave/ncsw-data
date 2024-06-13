@@ -180,16 +180,13 @@ The following miscellaneous chemical reaction rule data sources are currently su
 
 
 ## What's Next?
-The following updates are currently planned for version **v.2024.06**:
-
-- [ ] Complete the development of the _/ncsw_data/storage_ sub-package.
-- [ ] Create a _/scripts_ directory.
-
 The following updates are currently planned for version **v.2024.07**:
 
-- [ ] Set up a _/documentation_ directory.
-- [ ] Set up a _/notebooks_ directory.
-- [ ] Set up a _/tests_ directory.
+- [ ] Complete the development of the _/ncsw_data/storage_ sub-package.
+- [ ] Create the _/documentation_ directory.
+- [ ] Create the _/notebooks_ directory.
+- [ ] Create the _/scripts_ directory.
+- [ ] Create the _/tests_ directory.
 - [ ] Publish the package on [PyPI](https://pypi.org).
 
 
