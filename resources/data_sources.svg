@@ -1,0 +1,35 @@
+<svg fill="none" viewBox="0 0 800 400" width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+    <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <style>
+                .tg  {border-collapse:collapse;border-spacing:0;}
+                .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif; font-size:14px; overflow:hidden;padding:10px 5px;word-break:normal;}
+                .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px; font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+                .tg .tg-baqh{text-align:center;vertical-align:top}
+                .tg .tg-amwm{font-weight:bold;text-align:center;vertical-align:top}
+                .tg .tg-nrix{text-align:center;vertical-align:middle}
+            </style>
+
+            <table class="tg">
+                <thead>
+                    <tr>
+                        <th class="tg-amwm">Category</th>
+                        <th class="tg-amwm">Source</th>
+                        <th class="tg-amwm">DOI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tg-nrix" rowspan="2">Chemical Compounds</td>
+                        <td class="tg-baqh">ChEMBL</td>
+                        <td class="tg-baqh">1</td>
+                    </tr>
+                    <tr>
+                        <td class="tg-baqh">ZINC20</td>
+                        <td class="tg-baqh">2</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </foreignObject>
+</svg>
