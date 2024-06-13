@@ -191,9 +191,8 @@ The following updates are currently planned for version **v.2024.07**:
 
 
 ## License Information
-The contents of this repository are published under the [MIT](/LICENSE) license. Please refer to individual
-[references](#references) for more details regarding the license information of external resources utilized within this 
-repository.
+The contents of this repository are published under the [MIT](/LICENSE) license. Please refer to individual references
+for more details regarding the license information of external resources utilized within this repository.
 
 
 ## Contact
