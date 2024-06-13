@@ -156,7 +156,7 @@ The following miscellaneous chemical reaction data sources are currently support
 The following chemical reaction rule data sources are currently supported:
 
 1. [RetroRules](#retrorules)
-2. [Miscellaneous Data Sources](#miscellaneous-1)
+2. [Miscellaneous](#miscellaneous-1)
 
 
 #### RetroRules
