@@ -180,13 +180,16 @@ The following miscellaneous chemical reaction rule data sources are currently su
 
 
 ## What's Next?
-The following is planned for the [ncsw_data](/ncsw_data) package version **v.2024.07**:
+The following updates are currently planned for version **v.2024.06**:
 
-- [ ] Complete the development of the [storage](/ncsw_data/storage) sub-package.
-- [ ] Set up a [documentation](/documentation) directory.
-- [ ] Set up a [notebooks](/notebooks) directory.
-- [ ] Set up a [scripts](/scripts) directory.
-- [ ] Set up a [tests](/tests) directory.
+- [ ] Complete the development of the _/ncsw_data/storage_ sub-package.
+- [ ] Create a _/scripts_ directory.
+
+The following updates are currently planned for version **v.2024.07**:
+
+- [ ] Set up a _/documentation_ directory.
+- [ ] Set up a _/notebooks_ directory.
+- [ ] Set up a _/tests_ directory.
 - [ ] Publish the package on [PyPI](https://pypi.org).
 
 
@@ -235,4 +238,4 @@ Products, and Transition States of Elementary Chemical Reactions based on Quantu
 of Reaction Barrier Heights: Toward Coupled-cluster Accuracy**. _Sci. Data_, 9, 417, 2022.
 
 **[[9]](https://doi.org/10.1093/nar/gky940)** Duigou, T., du Lac, M., Carbonell, P., and Faulon, J. **RetroRules: A
-Database of Reaction Rules for Engineering Biology**. _Nucleic Acids Research_, 2018, 47, D1, D1229–D1235.
+Database of Reaction Rules for Engineering Biology**. _Nucleic Acids Research_, 47, D1, 2018, D1229–D1235.
