@@ -50,8 +50,8 @@ class OpenReactionDatabase(AbstractBaseDataSource):
 
         return {
             "github": {
-                "v_github_release_v_0_1_0": "https://doi.org/10.1021/jacs.1c09820",
-                "v_github_main": "https://doi.org/10.1021/jacs.1c09820",
+                "v_release_v_0_1_0": "https://doi.org/10.1021/jacs.1c09820",
+                "v_main": "https://doi.org/10.1021/jacs.1c09820",
             },
         }
 
@@ -76,7 +76,7 @@ class OpenReactionDatabase(AbstractBaseDataSource):
                 )
             )
 
-        if version == "v_github_release_v_0_1_0":
+        if version == "v_release_v_0_1_0":
             self._download_file(
                 file_url="https://github.com/open-reaction-database/ord-data/archive/refs/tags/v0.1.0.zip",
                 file_name="ord-data-0.1.0.zip",
@@ -159,7 +159,7 @@ class OpenReactionDatabase(AbstractBaseDataSource):
                 )
             )
 
-        if version == "v_github_release_v_0_1_0":
+        if version == "v_release_v_0_1_0":
             input_file_path = Path(input_directory_path, "ord-data-0.1.0.zip")
 
         else:
@@ -316,7 +316,7 @@ class OpenReactionDatabase(AbstractBaseDataSource):
                 )
             )
 
-        if version == "v_github_release_v_0_1_0":
+        if version == "v_release_v_0_1_0":
             input_directory_path = Path(input_directory_path, "ord-data-0.1.0", "data")
 
         else:

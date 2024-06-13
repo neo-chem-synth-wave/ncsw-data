@@ -60,7 +60,7 @@ class USPTOReactionDataset(AbstractBaseDataSource):
             "github": {
                 "v_15k_by_20170418_coley_c_w_et_al": "https://doi.org/10.1021/acscentsci.7b00064",
                 "v_50k_by_20171116_coley_c_w_et_al": "https://doi.org/10.1021/acscentsci.7b00355",
-                "v_480k_or_mit_by_20172912_jin_w_et_al": "https://doi.org/10.48550/arXiv.1709.04555",
+                "v_480k_or_mit_by_20171229_jin_w_et_al": "https://doi.org/10.48550/arXiv.1709.04555",
             },
             "ibm_box": {
                 "v_480k_or_mit_by_20180622_schwaller_p_et_al": "https://doi.org/10.1039/C8SC02339E",
@@ -452,7 +452,7 @@ class USPTOReactionDataset(AbstractBaseDataSource):
 
         if version in [
             "v_15k_by_20170418_coley_c_w_et_al",
-            "v_480k_or_mit_by_20172912_jin_w_et_al",
+            "v_480k_or_mit_by_20171229_jin_w_et_al",
         ]:
             with ZipFile(
                 file=Path(input_directory_path, "data.zip")
@@ -816,7 +816,7 @@ class USPTOReactionDataset(AbstractBaseDataSource):
 
         if version in [
             "v_15k_by_20170418_coley_c_w_et_al",
-            "v_480k_or_mit_by_20172912_jin_w_et_al",
+            "v_480k_or_mit_by_20171229_jin_w_et_al",
         ]:
             train = read_csv(
                 filepath_or_buffer=Path(input_directory_path, "data", "train.txt"),
