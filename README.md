@@ -9,13 +9,13 @@ long as computers themselves, the expected blend of reliability and innovation h
 achieve. Nevertheless, recent machine learning approaches have exhibited the potential to address these shortcomings.
 The open-source data utilized by such approaches frequently lack quality and quantity, are stored in various formats, or
 are published behind a paywall, all of which can represent significant barriers to entry for researchers. The main
-objective of the NeoChemSynthWave: Data project is to lower these barriers by systematically curating and facilitating
-access to relevant computer-assisted chemical synthesis data sources.
+objective of the **NeoChemSynthWave: Data** project is to lower these barriers by systematically curating and
+facilitating access to relevant computer-assisted chemical synthesis data sources.
 
 
 ## Installation
-A minimal virtual environment can be created using the [git](https://git-scm.com) and
-[conda](https://docs.conda.io/en/latest) commands as follows:
+A minimal virtual environment can be created using the [git](https://git-scm.com) and [conda](https://conda.io) commands
+as follows:
 
 ```shell
 git clone https://github.com/neo-chem-synth-wave/ncsw-data.git
@@ -27,7 +27,7 @@ conda env create -f environment.yaml
 conda activate ncsw-data
 ```
 
-The package can be locally installed using the [pip](https://pip.pypa.io/en/stable) command as follows:
+The package can be locally installed using the [pip](https://pip.pypa.io) command as follows:
 
 ```shell
 pip install --no-build-isolation -e .
