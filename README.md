@@ -1,5 +1,5 @@
 # NeoChemSynthWave: Data
-![Static Badge](https://img.shields.io/badge/ncsw__chemistry-v.2024.07.1-%23ED9B33?logo=github&style=flat)
+![Static Badge](https://img.shields.io/badge/ncsw__data-v.2024.7.1-%23E68E36?logo=github&style=flat)
 ![Static Badge](https://img.shields.io/badge/Institute%20of%20Science%20Tokyo-%231C3177?style=flat)
 ![Static Badge](https://img.shields.io/badge/Elix%2C%20Inc.-%235EB6B3?style=flat)
 
@@ -24,17 +24,17 @@ cd ncsw-data
 
 conda env create -f environment.yaml
 
-conda activate ncsw-data
+conda activate ncsw-data-env
 ```
 
-The package can be locally installed using the [pip](https://pip.pypa.io) command as follows:
+The [ncsw_data](/ncsw_data) package can be locally installed using the [pip](https://pip.pypa.io) command as follows:
 
 ```shell
 pip install --no-build-isolation -e .
 ```
 
 
-## Data Sources
+## Utilization
 The following types of computer-assisted chemical synthesis data are currently supported:
 
 1. [Chemical Compounds](#chemical-compounds)
