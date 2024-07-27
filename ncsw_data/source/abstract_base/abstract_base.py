@@ -111,21 +111,21 @@ class AbstractBaseDataSource(ABC):
             desc="Downloading the '{file_name:s}' file".format(
                 file_name=file_name
             ),
-            ncols=120
+            ncols=150
         ) as file_download_stream_handle:
             with Path(output_directory_path, file_name).open(
                 mode="wb"
-            ) as file_handle:
+            ) as destination_file_handle:
                 copyfileobj(
                     fsrc=file_download_stream_handle,
-                    fdst=file_handle
+                    fdst=destination_file_handle
                 )
 
     @property
     @abstractmethod
     def available_versions(
             self
-    ) -> Dict[str, Dict[str, str]]:
+    ) -> Dict[str, str]:
         """
         Get the available versions of the data source.
 
@@ -139,7 +139,7 @@ class AbstractBaseDataSource(ABC):
             output_directory_path: Union[str, PathLike[str]]
     ) -> None:
         """
-        Download the data.
+        Download the data from the data source.
 
         :parameter version: The version of the data source.
         :parameter output_directory_path: The path to the output directory where the data should be downloaded.
@@ -153,7 +153,7 @@ class AbstractBaseDataSource(ABC):
             output_directory_path: Union[str, PathLike[str]]
     ) -> None:
         """
-        Extract the data.
+        Extract the data from the data source.
 
         :parameter version: The version of the data source.
         :parameter input_directory_path: The path to the input directory where the data is downloaded.
@@ -168,7 +168,7 @@ class AbstractBaseDataSource(ABC):
             output_directory_path: Union[str, PathLike[str]]
     ) -> None:
         """
-        Format the data.
+        Format the data from the data source.
 
         :parameter version: The version of the data source.
         :parameter input_directory_path: The path to the input directory where the data is extracted.

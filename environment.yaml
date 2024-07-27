@@ -1,4 +1,4 @@
-name: ncsw-data
+name: ncsw-data-env
 
 channels:
   - conda-forge
