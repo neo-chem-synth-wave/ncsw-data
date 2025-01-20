@@ -1,12 +1,12 @@
-""" The ``ncsw_data.source.base`` package ``base`` module. """
+""" The ``ncsw_data.storage.base`` package ``base`` module. """
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from logging import Logger
 from typing import Optional
 
 
-class BaseDataSource(ABC):
-    """ The base data source class. """
+class BaseDataStorage(ABC):
+    """ The base data storage class. """
 
     def __init__(
             self,
@@ -44,24 +44,3 @@ class BaseDataSource(ABC):
         """
 
         self.__logger = value
-
-    @abstractmethod
-    def download(
-            self,
-            **kwargs
-    ) -> None:
-        """ Download the data from the data source. """
-
-    @abstractmethod
-    def extract(
-            self,
-            **kwargs
-    ) -> None:
-        """ Extract the data from the data source. """
-
-    @abstractmethod
-    def format(
-            self,
-            **kwargs
-    ) -> None:
-        """ Format the data from the data source. """
