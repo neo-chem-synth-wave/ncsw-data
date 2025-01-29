@@ -5,15 +5,15 @@ from logging import Logger
 from typing import Optional
 
 
-class BaseDataStorage(ABC):
-    """ The base data storage class. """
+class DataStorageBase(ABC):
+    """ The data storage base class. """
 
     def __init__(
             self,
             logger: Optional[Logger] = None
     ) -> None:
         """
-        The constructor method of the class.
+        The `__init__` method of the class.
 
         :parameter logger: The logger. The value `None` indicates that the logger should not be utilized.
         """
