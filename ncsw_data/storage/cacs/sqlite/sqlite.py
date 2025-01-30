@@ -14,7 +14,7 @@ from tqdm.auto import tqdm
 from ncsw_data.storage.base.base import DataStorageBase
 from ncsw_data.storage.cacs.sqlite.model.archive import *
 from ncsw_data.storage.cacs.sqlite.model.base.base import CaCSSQLiteDatabaseModelBase
-from ncsw_data.storage.cacs.sqlite.model.workbench import CaCSSQLiteDatabaseModelWorkbenchCompound, CaCSSQLiteDatabaseModelWorkbenchReaction
+from ncsw_data.storage.cacs.sqlite.model.workbench import *
 from ncsw_data.storage.cacs.sqlite.utility import *
 
 
@@ -559,6 +559,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
     def migrate_archive_to_workbench_compounds(
             self,
             archive_compound_standardization_function: Callable[[str], str],
+            archive_compound_is_building_block: bool,
             archive_source_names_versions_and_file_names: Optional[Sequence[Tuple[str, str, str]]] = None,
             database_user: str = "user",
             database_chunk_limit: int = 10000
@@ -568,6 +569,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
         :parameter archive_compound_standardization_function: The standardization function of the archive chemical
             compounds.
+        :parameter archive_compound_is_building_block: The flag indicating whether the archive chemical compounds are
+            building blocks.
         :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
             sources from which the chemical compounds should be retrieved. The value `None` indicates that the chemical
             compounds should be retrieved from all archive sources.
@@ -627,7 +630,11 @@ class CaCSSQLiteDatabase(DataStorageBase):
                         workbench_compound_smiles_to_id = \
                             CaCSSQLiteDatabaseInsertUtility.insert_and_select_workbench_compounds(
                                 database_session=database_session,
-                                smiles_strings=archive_compound_id_to_workbench_compound_smiles.values(),
+                                smiles_strings=list(
+                                    archive_compound_id_to_workbench_compound_smiles.values()
+                                ),
+                                is_building_block_flag_or_flags=archive_compound_is_building_block,
+                                is_intermediate_flag_or_flags=None,
                                 created_by=database_user
                             )
 
@@ -841,11 +848,23 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
     def select_workbench_reactions(
             self,
+            workbench_reaction_reactant_compound_smiles_strings: Optional[Iterable[str]] = None,
+            workbench_reaction_spectator_compound_smiles_strings: Optional[Iterable[str]] = None,
+            workbench_reaction_product_compound_smiles_strings: Optional[Iterable[str]] = None,
             database_chunk_limit: int = 10000
     ) -> Generator[Sequence[Row[Tuple[CaCSSQLiteDatabaseModelWorkbenchReaction]]], None, None]:
         """
         Select the workbench chemical reactions from the database.
 
+        :parameter workbench_reaction_reactant_compound_smiles_strings: The reactant compound SMILES strings of the
+            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
+            chemical reactions should be retrieved regardless of the reactant chemical compounds.
+        :parameter workbench_reaction_spectator_compound_smiles_strings: The spectator compound SMILES strings of the
+            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
+            chemical reactions should be retrieved regardless of the spectator chemical compounds.
+        :parameter workbench_reaction_product_compound_smiles_strings: The product compound SMILES strings of the
+            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
+            chemical reactions should be retrieved regardless of the product chemical compounds.
         :parameter database_chunk_limit: The chunk limit of the database.
 
         :returns: The generator of the workbench chemical reactions from the database.
@@ -853,7 +872,17 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
         try:
             with self.__database_sessionmaker() as database_session:
-                workbench_reactions_query = CaCSSQLiteDatabaseSelectUtility.construct_workbench_reactions_query()
+                workbench_reactions_query = CaCSSQLiteDatabaseSelectUtility.construct_workbench_reactions_query(
+                    workbench_reaction_reactant_compound_smiles_strings=(
+                        workbench_reaction_reactant_compound_smiles_strings
+                    ),
+                    workbench_reaction_spectator_compound_smiles_strings=(
+                        workbench_reaction_spectator_compound_smiles_strings
+                    ),
+                    workbench_reaction_product_compound_smiles_strings=(
+                        workbench_reaction_product_compound_smiles_strings
+                    ),
+                )
 
                 number_of_workbench_reactions = database_session.scalar(
                     statement=workbench_reactions_query.with_only_columns(

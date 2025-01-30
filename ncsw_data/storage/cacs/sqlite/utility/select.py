@@ -2,7 +2,7 @@
 
 from typing import Iterable, Optional, Tuple
 
-from sqlalchemy.sql import select, tuple_
+from sqlalchemy.sql import intersect, select, tuple_
 from sqlalchemy.sql.selectable import Select
 
 from ncsw_data.storage.cacs.sqlite.model.archive import *
@@ -201,13 +201,113 @@ class CaCSSQLiteDatabaseSelectUtility:
         )
 
     @staticmethod
-    def construct_workbench_reactions_query() -> Select[Tuple[CaCSSQLiteDatabaseModelWorkbenchReaction]]:
+    def construct_workbench_reactions_query(
+            workbench_reaction_reactant_compound_smiles_strings: Optional[Iterable[str]] = None,
+            workbench_reaction_spectator_compound_smiles_strings: Optional[Iterable[str]] = None,
+            workbench_reaction_product_compound_smiles_strings: Optional[Iterable[str]] = None
+    ) -> Select[Tuple[CaCSSQLiteDatabaseModelWorkbenchReaction]]:
         """
         Construct the workbench chemical reactions query of the database.
+
+        :parameter workbench_reaction_reactant_compound_smiles_strings: The reactant compound SMILES strings of the
+            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
+            chemical reactions should be retrieved regardless of the reactant chemical compounds.
+        :parameter workbench_reaction_spectator_compound_smiles_strings: The spectator compound SMILES strings of the
+            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
+            chemical reactions should be retrieved regardless of the spectator chemical compounds.
+        :parameter workbench_reaction_product_compound_smiles_strings: The product compound SMILES strings of the
+            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
+            chemical reactions should be retrieved regardless of the product chemical compounds.
 
         :returns: The workbench chemical reactions query of the database.
         """
 
-        return select(
-            CaCSSQLiteDatabaseModelWorkbenchReaction
-        )
+        workbench_reaction_queries = list()
+
+        if workbench_reaction_reactant_compound_smiles_strings is not None:
+            workbench_reaction_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_reactant_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        if workbench_reaction_spectator_compound_smiles_strings is not None:
+            workbench_reaction_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_spectator_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        if workbench_reaction_product_compound_smiles_strings is not None:
+            workbench_reaction_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_product_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        if len(workbench_reaction_queries) == 0:
+            return select(
+                CaCSSQLiteDatabaseModelWorkbenchReaction
+            )
+
+        elif len(workbench_reaction_queries) == 1:
+            return workbench_reaction_queries[0]
+
+        else:
+            return select(
+                CaCSSQLiteDatabaseModelWorkbenchReaction
+            ).where(
+                CaCSSQLiteDatabaseModelWorkbenchReaction.id.in_(
+                    intersect(
+                        *workbench_reaction_queries
+                    )
+                )
+            )

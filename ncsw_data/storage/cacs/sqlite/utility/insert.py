@@ -1,7 +1,7 @@
 """ The ``ncsw_data.storage.cacs.sqlite.utility`` package ``insert`` module. """
 
 from itertools import chain
-from typing import Dict, Iterable, Mapping
+from typing import Dict, Iterable, Mapping, Optional, Sequence, Union
 
 from sqlalchemy.dialects.sqlite.dml import insert
 from sqlalchemy.orm.session import Session
@@ -370,7 +370,9 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def insert_and_select_workbench_compounds(
             database_session: Session,
-            smiles_strings: Iterable[str],
+            smiles_strings: Sequence[str],
+            is_building_block_flag_or_flags: Optional[Union[bool, Sequence[bool]]],
+            is_intermediate_flag_or_flags: Optional[Union[bool, Sequence[bool]]],
             created_by: str
     ) -> Dict[str, int]:
         """
@@ -378,6 +380,10 @@ class CaCSSQLiteDatabaseInsertUtility:
 
         :parameter database_session: The session of the database.
         :parameter smiles_strings: The SMILES strings of the workbench chemical compounds.
+        :parameter is_building_block_flag_or_flags: The flag or flags indicating whether the workbench chemical
+            compounds are building blocks.
+        :parameter is_intermediate_flag_or_flags: The flag or flags indicating whether the workbench chemical compounds
+            are intermediates.
         :parameter created_by: The user of the database inserting the workbench chemical compounds.
 
         :returns: The workbench chemical compound SMILES string to ID dictionary.
@@ -385,11 +391,30 @@ class CaCSSQLiteDatabaseInsertUtility:
 
         workbench_compounds = list()
 
-        for smiles in smiles_strings:
-            workbench_compounds.append({
-                "smiles": smiles,
-                "created_by": created_by,
-            })
+        for smiles_index, smiles in enumerate(smiles_strings):
+            workbench_compound = dict()
+
+            workbench_compound["smiles"] = smiles
+
+            if is_building_block_flag_or_flags is not None:
+                if isinstance(is_building_block_flag_or_flags, bool):
+                    workbench_compound["is_building_block"] = is_building_block_flag_or_flags
+
+                else:
+                    workbench_compound["is_building_block"] = is_building_block_flag_or_flags[smiles_index]
+
+            if is_intermediate_flag_or_flags is not None:
+                if isinstance(is_intermediate_flag_or_flags, bool):
+                    workbench_compound["is_intermediate"] = is_intermediate_flag_or_flags
+
+                else:
+                    workbench_compound["is_intermediate"] = is_intermediate_flag_or_flags[smiles_index]
+
+            workbench_compound["created_by"] = created_by
+
+            workbench_compounds.append(
+                workbench_compound
+            )
 
         database_session.execute(
             statement=insert(
@@ -553,6 +578,8 @@ class CaCSSQLiteDatabaseInsertUtility:
                         archive_reaction_id_to_workbench_reaction_reactant_compound_smiles_strings.values()
                     )
                 ),
+                is_building_block_flag_or_flags=False,
+                is_intermediate_flag_or_flags=True,
                 created_by=created_by
             )
 
@@ -603,6 +630,8 @@ class CaCSSQLiteDatabaseInsertUtility:
                         archive_reaction_id_to_workbench_reaction_spectator_compound_smiles_strings.values()
                     )
                 ),
+                is_building_block_flag_or_flags=None,
+                is_intermediate_flag_or_flags=None,
                 created_by=created_by
             )
 
@@ -653,6 +682,8 @@ class CaCSSQLiteDatabaseInsertUtility:
                         archive_reaction_id_to_workbench_reaction_product_compound_smiles_strings.values()
                     )
                 ),
+                is_building_block_flag_or_flags=None,
+                is_intermediate_flag_or_flags=None,
                 created_by=created_by
             )
 
