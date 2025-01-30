@@ -6,6 +6,7 @@ from sqlalchemy.sql import select, tuple_
 from sqlalchemy.sql.selectable import Select
 
 from ncsw_data.storage.cacs.sqlite.model.archive import *
+from ncsw_data.storage.cacs.sqlite.model.workbench import *
 
 
 class CaCSSQLiteDatabaseSelectUtility:
@@ -186,3 +187,27 @@ class CaCSSQLiteDatabaseSelectUtility:
             )
 
         return archive_reaction_patterns_from_sources_query
+
+    @staticmethod
+    def construct_workbench_compounds_query() -> Select[Tuple[CaCSSQLiteDatabaseModelWorkbenchCompound]]:
+        """
+        Construct the workbench chemical compounds query of the database.
+
+        :returns: The workbench chemical compounds query of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelWorkbenchCompound
+        )
+
+    @staticmethod
+    def construct_workbench_reactions_query() -> Select[Tuple[CaCSSQLiteDatabaseModelWorkbenchReaction]]:
+        """
+        Construct the workbench chemical reactions query of the database.
+
+        :returns: The workbench chemical reactions query of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelWorkbenchReaction
+        )

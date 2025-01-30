@@ -548,8 +548,10 @@ class CaCSSQLiteDatabaseInsertUtility:
         workbench_reaction_reactant_compound_smiles_to_id = \
             CaCSSQLiteDatabaseInsertUtility.insert_and_select_workbench_compounds(
                 database_session=database_session,
-                smiles_strings=chain.from_iterable(
-                    archive_reaction_id_to_workbench_reaction_reactant_compound_smiles_strings.values()
+                smiles_strings=list(
+                    chain.from_iterable(
+                        archive_reaction_id_to_workbench_reaction_reactant_compound_smiles_strings.values()
+                    )
                 ),
                 created_by=created_by
             )
@@ -596,8 +598,10 @@ class CaCSSQLiteDatabaseInsertUtility:
         workbench_reaction_spectator_compound_smiles_to_id = \
             CaCSSQLiteDatabaseInsertUtility.insert_and_select_workbench_compounds(
                 database_session=database_session,
-                smiles_strings=chain.from_iterable(
-                    archive_reaction_id_to_workbench_reaction_spectator_compound_smiles_strings.values()
+                smiles_strings=list(
+                    chain.from_iterable(
+                        archive_reaction_id_to_workbench_reaction_spectator_compound_smiles_strings.values()
+                    )
                 ),
                 created_by=created_by
             )
@@ -644,8 +648,10 @@ class CaCSSQLiteDatabaseInsertUtility:
         workbench_reaction_product_compound_smiles_to_id = \
             CaCSSQLiteDatabaseInsertUtility.insert_and_select_workbench_compounds(
                 database_session=database_session,
-                smiles_strings=chain.from_iterable(
-                    archive_reaction_id_to_workbench_reaction_product_compound_smiles_strings.values()
+                smiles_strings=list(
+                    chain.from_iterable(
+                        archive_reaction_id_to_workbench_reaction_product_compound_smiles_strings.values()
+                    )
                 ),
                 created_by=created_by
             )
