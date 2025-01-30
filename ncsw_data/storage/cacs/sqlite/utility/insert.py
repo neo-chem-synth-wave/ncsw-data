@@ -1,12 +1,14 @@
 """ The ``ncsw_data.storage.cacs.sqlite.utility`` package ``insert`` module. """
 
-from typing import Dict, Iterable
+from itertools import chain
+from typing import Dict, Iterable, Mapping
 
 from sqlalchemy.dialects.sqlite.dml import insert
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import select
 
 from ncsw_data.storage.cacs.sqlite.model.archive import *
+from ncsw_data.storage.cacs.sqlite.model.workbench import *
 
 
 class CaCSSQLiteDatabaseInsertUtility:
@@ -363,4 +365,306 @@ class CaCSSQLiteDatabaseInsertUtility:
                 table=CaCSSQLiteDatabaseModelArchiveReactionPatternSource
             ).on_conflict_do_nothing(),
             params=archive_reaction_pattern_sources
+        )
+
+    @staticmethod
+    def insert_and_select_workbench_compounds(
+            database_session: Session,
+            smiles_strings: Iterable[str],
+            created_by: str
+    ) -> Dict[str, int]:
+        """
+        Insert and select the workbench chemical compounds from the database.
+
+        :parameter database_session: The session of the database.
+        :parameter smiles_strings: The SMILES strings of the workbench chemical compounds.
+        :parameter created_by: The user of the database inserting the workbench chemical compounds.
+
+        :returns: The workbench chemical compound SMILES string to ID dictionary.
+        """
+
+        workbench_compounds = list()
+
+        for smiles in smiles_strings:
+            workbench_compounds.append({
+                "smiles": smiles,
+                "created_by": created_by,
+            })
+
+        database_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchCompound
+            ).on_conflict_do_nothing(),
+            params=workbench_compounds
+        )
+
+        workbench_compounds = database_session.execute(
+            statement=select(
+                CaCSSQLiteDatabaseModelWorkbenchCompound.id,
+                CaCSSQLiteDatabaseModelWorkbenchCompound.smiles
+            ).where(
+                CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                    other=smiles_strings
+                )
+            )
+        ).all()
+
+        workbench_compound_smiles_to_id = dict()
+
+        for workbench_compound in workbench_compounds:
+            workbench_compound_smiles_to_id[workbench_compound.smiles] = workbench_compound.id
+
+        return workbench_compound_smiles_to_id
+
+    @staticmethod
+    def insert_workbench_compound_archives(
+            database_session: Session,
+            archive_compound_id_to_workbench_compound_smiles: Mapping[int, str],
+            workbench_compound_smiles_to_id: Mapping[str, int]
+    ) -> None:
+        """
+        Insert the workbench chemical compound archives into the database.
+
+        :parameter database_session: The session of the database.
+        :parameter archive_compound_id_to_workbench_compound_smiles: The archive chemical compound ID to workbench
+            chemical compound SMILES string mapping.
+        :parameter workbench_compound_smiles_to_id: The workbench chemical compound SMILES string to ID mapping.
+        """
+
+        workbench_compound_archives = list()
+
+        for archive_compound_id, workbench_compound_smiles in archive_compound_id_to_workbench_compound_smiles.items():
+            workbench_compound_archives.append({
+                "workbench_compound_id": workbench_compound_smiles_to_id[workbench_compound_smiles],
+                "archive_compound_id": archive_compound_id,
+            })
+
+        database_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundArchive
+            ).on_conflict_do_nothing(),
+            params=workbench_compound_archives
+        )
+
+    @staticmethod
+    def insert_and_select_workbench_reactions(
+            database_session: Session,
+            smiles_strings: Iterable[str],
+            created_by: str
+    ) -> Dict[str, int]:
+        """
+        Insert and select the workbench chemical reactions from the database.
+
+        :parameter database_session: The session of the database.
+        :parameter smiles_strings: The SMILES strings of the workbench chemical reactions.
+        :parameter created_by: The user of the database inserting the workbench chemical reactions.
+
+        :returns: The workbench chemical reaction SMILES string to ID dictionary.
+        """
+
+        workbench_reactions = list()
+
+        for smiles in smiles_strings:
+            workbench_reactions.append({
+                "smiles": smiles,
+                "created_by": created_by,
+            })
+
+        database_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchReaction
+            ).on_conflict_do_nothing(),
+            params=workbench_reactions
+        )
+
+        workbench_reactions = database_session.execute(
+            statement=select(
+                CaCSSQLiteDatabaseModelWorkbenchReaction.id,
+                CaCSSQLiteDatabaseModelWorkbenchReaction.smiles
+            ).where(
+                CaCSSQLiteDatabaseModelWorkbenchReaction.smiles.in_(
+                    other=smiles_strings
+                )
+            )
+        ).all()
+
+        workbench_reaction_smiles_to_id = dict()
+
+        for workbench_reaction in workbench_reactions:
+            workbench_reaction_smiles_to_id[workbench_reaction.smiles] = workbench_reaction.id
+
+        return workbench_reaction_smiles_to_id
+
+    @staticmethod
+    def insert_workbench_reaction_archives(
+            database_session: Session,
+            archive_reaction_id_to_workbench_reaction_smiles: Mapping[int, str],
+            workbench_reaction_smiles_to_id: Mapping[str, int]
+    ) -> None:
+        """
+        Insert the workbench chemical reaction archives into the database.
+
+        :parameter database_session: The session of the database.
+        :parameter archive_reaction_id_to_workbench_reaction_smiles: The archive chemical reaction ID to workbench
+            chemical reaction SMILES string mapping.
+        :parameter workbench_reaction_smiles_to_id: The workbench chemical reaction SMILES string to ID mapping.
+        """
+
+        workbench_reaction_archives = list()
+
+        for archive_reaction_id, workbench_reaction_smiles in archive_reaction_id_to_workbench_reaction_smiles.items():
+            workbench_reaction_archives.append({
+                "workbench_reaction_id": workbench_reaction_smiles_to_id[workbench_reaction_smiles],
+                "archive_reaction_id": archive_reaction_id,
+            })
+
+        database_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchReactionArchive
+            ).on_conflict_do_nothing(),
+            params=workbench_reaction_archives
+        )
+
+    @staticmethod
+    def insert_workbench_reaction_reactant_compounds(
+            database_session: Session,
+            archive_reaction_id_to_workbench_reaction_smiles: Mapping[int, str],
+            archive_reaction_id_to_workbench_reaction_reactant_compound_smiles_strings: Mapping[int, Iterable[str]],
+            workbench_reaction_smiles_to_id: Mapping[str, int],
+            created_by: str
+    ) -> None:
+        """
+        Insert the workbench chemical reaction reactant compounds into the database.
+
+        :parameter database_session: The session of the database.
+        :parameter archive_reaction_id_to_workbench_reaction_smiles: The archive chemical reaction ID to workbench
+            chemical reaction SMILES string mapping.
+        :parameter archive_reaction_id_to_workbench_reaction_reactant_compound_smiles_strings: The archive chemical
+            reaction ID to workbench chemical reaction reactant compound SMILES strings mapping.
+        :parameter workbench_reaction_smiles_to_id: The workbench chemical reaction SMILES string to ID mapping.
+        :parameter created_by: The user of the database inserting the workbench chemical reaction reactant compounds.
+        """
+
+        workbench_reaction_reactant_compound_smiles_to_id = \
+            CaCSSQLiteDatabaseInsertUtility.insert_and_select_workbench_compounds(
+                database_session=database_session,
+                smiles_strings=chain.from_iterable(
+                    archive_reaction_id_to_workbench_reaction_reactant_compound_smiles_strings.values()
+                ),
+                created_by=created_by
+            )
+
+        workbench_reaction_reactant_compounds = list()
+
+        for archive_reaction_id, workbench_reaction_smiles in archive_reaction_id_to_workbench_reaction_smiles.items():
+            for workbench_reaction_reactant_compound_smiles in \
+                    archive_reaction_id_to_workbench_reaction_reactant_compound_smiles_strings[archive_reaction_id]:
+                workbench_reaction_reactant_compounds.append({
+                    "workbench_reaction_id": workbench_reaction_smiles_to_id[workbench_reaction_smiles],
+                    "workbench_compound_id": workbench_reaction_reactant_compound_smiles_to_id[
+                        workbench_reaction_reactant_compound_smiles
+                    ],
+                })
+
+        database_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound
+            ).on_conflict_do_nothing(),
+            params=workbench_reaction_reactant_compounds
+        )
+
+    @staticmethod
+    def insert_workbench_reaction_spectator_compounds(
+            database_session: Session,
+            archive_reaction_id_to_workbench_reaction_smiles: Mapping[int, str],
+            archive_reaction_id_to_workbench_reaction_spectator_compound_smiles_strings: Mapping[int, Iterable[str]],
+            workbench_reaction_smiles_to_id: Mapping[str, int],
+            created_by: str
+    ) -> None:
+        """
+        Insert the workbench chemical reaction spectator compounds into the database.
+
+        :parameter database_session: The session of the database.
+        :parameter archive_reaction_id_to_workbench_reaction_smiles: The archive chemical reaction ID to workbench
+            chemical reaction SMILES string mapping.
+        :parameter archive_reaction_id_to_workbench_reaction_spectator_compound_smiles_strings: The archive chemical
+            reaction ID to workbench chemical reaction spectator compound SMILES strings mapping.
+        :parameter workbench_reaction_smiles_to_id: The workbench chemical reaction SMILES string to ID mapping.
+        :parameter created_by: The user of the database inserting the workbench chemical reaction spectator compounds.
+        """
+
+        workbench_reaction_spectator_compound_smiles_to_id = \
+            CaCSSQLiteDatabaseInsertUtility.insert_and_select_workbench_compounds(
+                database_session=database_session,
+                smiles_strings=chain.from_iterable(
+                    archive_reaction_id_to_workbench_reaction_spectator_compound_smiles_strings.values()
+                ),
+                created_by=created_by
+            )
+
+        workbench_reaction_spectator_compounds = list()
+
+        for archive_reaction_id, workbench_reaction_smiles in archive_reaction_id_to_workbench_reaction_smiles.items():
+            for workbench_reaction_spectator_compound_smiles in \
+                    archive_reaction_id_to_workbench_reaction_spectator_compound_smiles_strings[archive_reaction_id]:
+                workbench_reaction_spectator_compounds.append({
+                    "workbench_reaction_id": workbench_reaction_smiles_to_id[workbench_reaction_smiles],
+                    "workbench_compound_id": workbench_reaction_spectator_compound_smiles_to_id[
+                        workbench_reaction_spectator_compound_smiles
+                    ],
+                })
+
+        database_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound
+            ).on_conflict_do_nothing(),
+            params=workbench_reaction_spectator_compounds
+        )
+
+    @staticmethod
+    def insert_workbench_reaction_product_compounds(
+            database_session: Session,
+            archive_reaction_id_to_workbench_reaction_smiles: Mapping[int, str],
+            archive_reaction_id_to_workbench_reaction_product_compound_smiles_strings: Mapping[int, Iterable[str]],
+            workbench_reaction_smiles_to_id: Mapping[str, int],
+            created_by: str
+    ) -> None:
+        """
+        Insert the workbench chemical reaction product compounds into the database.
+
+        :parameter database_session: The session of the database.
+        :parameter archive_reaction_id_to_workbench_reaction_smiles: The archive chemical reaction ID to workbench
+            chemical reaction SMILES string mapping.
+        :parameter archive_reaction_id_to_workbench_reaction_product_compound_smiles_strings: The archive chemical
+            reaction ID to workbench chemical reaction product compound SMILES strings mapping.
+        :parameter workbench_reaction_smiles_to_id: The workbench chemical reaction SMILES string to ID mapping.
+        :parameter created_by: The user of the database inserting the workbench chemical reaction product compounds.
+        """
+
+        workbench_reaction_product_compound_smiles_to_id = \
+            CaCSSQLiteDatabaseInsertUtility.insert_and_select_workbench_compounds(
+                database_session=database_session,
+                smiles_strings=chain.from_iterable(
+                    archive_reaction_id_to_workbench_reaction_product_compound_smiles_strings.values()
+                ),
+                created_by=created_by
+            )
+
+        workbench_reaction_product_compounds = list()
+
+        for archive_reaction_id, workbench_reaction_smiles in archive_reaction_id_to_workbench_reaction_smiles.items():
+            for workbench_reaction_product_compound_smiles in \
+                    archive_reaction_id_to_workbench_reaction_product_compound_smiles_strings[archive_reaction_id]:
+                workbench_reaction_product_compounds.append({
+                    "workbench_reaction_id": workbench_reaction_smiles_to_id[workbench_reaction_smiles],
+                    "workbench_compound_id": workbench_reaction_product_compound_smiles_to_id[
+                        workbench_reaction_product_compound_smiles
+                    ],
+                })
+
+        database_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound
+            ).on_conflict_do_nothing(),
+            params=workbench_reaction_product_compounds
         )
