@@ -39,3 +39,9 @@ class CaCSSQLiteDatabaseModelArchiveReaction(
         secondary="archive_reaction_source",
         back_populates="archive_reactions"
     )
+
+    workbench_reactions = relationship(
+        "CaCSSQLiteDatabaseModelWorkbenchReaction",
+        secondary="workbench_reaction_archive",
+        back_populates="archive_reactions"
+    )

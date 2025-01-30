@@ -39,3 +39,9 @@ class CaCSSQLiteDatabaseModelArchiveCompound(
         secondary="archive_compound_source",
         back_populates="archive_compounds"
     )
+
+    workbench_compounds = relationship(
+        "CaCSSQLiteDatabaseModelWorkbenchCompound",
+        secondary="workbench_compound_archive",
+        back_populates="archive_compounds"
+    )
