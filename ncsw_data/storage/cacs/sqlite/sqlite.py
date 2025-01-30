@@ -2,16 +2,19 @@
 
 from logging import Logger
 from math import ceil
-from typing import Optional, Sequence
+from typing import Generator, Iterable, Optional, Sequence, Tuple
 
 from sqlalchemy.engine.create import create_engine
+from sqlalchemy.engine.row import Row
 from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.sql.functions import count
 
 from tqdm.auto import tqdm
 
 from ncsw_data.storage.base.base import DataStorageBase
+from ncsw_data.storage.cacs.sqlite.model.archive import *
 from ncsw_data.storage.cacs.sqlite.model.base.base import CaCSSQLiteDatabaseModelBase
-from ncsw_data.storage.cacs.sqlite.utility.insert import CaCSSQLiteDatabaseInsertUtility
+from ncsw_data.storage.cacs.sqlite.utility import *
 
 
 class CaCSSQLiteDatabase(DataStorageBase):
@@ -351,6 +354,198 @@ class CaCSSQLiteDatabase(DataStorageBase):
                             archive_reaction_pattern_ids=archive_reaction_pattern_smarts_to_id.values(),
                             archive_source_id=archive_source_id
                         )
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_archive_compounds_from_sources(
+            self,
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]] = None,
+            database_chunk_limit: int = 10000
+    ) -> Generator[Sequence[Row[Tuple[CaCSSQLiteDatabaseModelArchiveCompound, CaCSSQLiteDatabaseModelArchiveSource]]], None, None]:
+        """
+        Select the archive chemical compounds from sources in the database.
+
+        :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
+            sources from which the chemical compounds should be retrieved. The value `None` indicates that the chemical
+            compounds should be retrieved from all archive sources.
+        :parameter database_chunk_limit: The chunk limit of the database.
+
+        :returns: The generator of the archive chemical compounds from sources in the database.
+        """
+
+        try:
+            with self.__database_sessionmaker() as database_session:
+                archive_compounds_from_sources_query = \
+                    CaCSSQLiteDatabaseSelectUtility.construct_archive_compounds_from_sources_query(
+                        archive_source_names_versions_and_file_names=archive_source_names_versions_and_file_names
+                    )
+
+                number_of_archive_compounds_from_sources = database_session.scalar(
+                    statement=archive_compounds_from_sources_query.with_only_columns(
+                        count(
+                            expression=CaCSSQLiteDatabaseModelArchiveCompound.id
+                        )
+                    ).distinct()
+                )
+
+                for database_chunk_offset in range(0, number_of_archive_compounds_from_sources, database_chunk_limit):
+                    yield database_session.execute(
+                        statement=archive_compounds_from_sources_query.distinct().limit(
+                            limit=database_chunk_limit
+                        ).offset(
+                            offset=database_chunk_offset
+                        )
+                    ).all()
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_archive_compound_patterns_from_sources(
+            self,
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]] = None,
+            database_chunk_limit: int = 10000
+    ) -> Generator[Sequence[Row[Tuple[CaCSSQLiteDatabaseModelArchiveCompoundPattern, CaCSSQLiteDatabaseModelArchiveSource]]], None, None]:
+        """
+        Select the archive chemical compound patterns from sources in the database.
+
+        :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
+            sources from which the chemical compound patterns should be retrieved. The value `None` indicates that the
+            chemical compound patterns should be retrieved from all archive sources.
+        :parameter database_chunk_limit: The chunk limit of the database.
+
+        :returns: The generator of the archive chemical compound patterns from sources in the database.
+        """
+
+        try:
+            with self.__database_sessionmaker() as database_session:
+                archive_compound_patterns_from_sources_query = \
+                    CaCSSQLiteDatabaseSelectUtility.construct_archive_compound_patterns_from_sources_query(
+                        archive_source_names_versions_and_file_names=archive_source_names_versions_and_file_names
+                    )
+
+                number_of_archive_compound_patterns_from_sources = database_session.scalar(
+                    statement=archive_compound_patterns_from_sources_query.with_only_columns(
+                        count(
+                            expression=CaCSSQLiteDatabaseModelArchiveCompoundPattern.id
+                        )
+                    ).distinct()
+                )
+
+                for database_chunk_offset in range(0, number_of_archive_compound_patterns_from_sources, database_chunk_limit):
+                    yield database_session.execute(
+                        statement=archive_compound_patterns_from_sources_query.distinct().limit(
+                            limit=database_chunk_limit
+                        ).offset(
+                            offset=database_chunk_offset
+                        )
+                    ).all()
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_archive_reactions_from_sources(
+            self,
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]] = None,
+            database_chunk_limit: int = 10000
+    ) -> Generator[Sequence[Row[Tuple[CaCSSQLiteDatabaseModelArchiveReaction, CaCSSQLiteDatabaseModelArchiveSource]]], None, None]:
+        """
+        Select the archive chemical reactions from sources in the database.
+
+        :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
+            sources from which the chemical reactions should be retrieved. The value `None` indicates that the chemical
+            reactions should be retrieved from all archive sources.
+        :parameter database_chunk_limit: The chunk limit of the database.
+
+        :returns: The generator of the archive chemical reactions from sources in the database.
+        """
+
+        try:
+            with self.__database_sessionmaker() as database_session:
+                archive_reactions_from_sources_query = \
+                    CaCSSQLiteDatabaseSelectUtility.construct_archive_reactions_from_sources_query(
+                        archive_source_names_versions_and_file_names=archive_source_names_versions_and_file_names
+                    )
+
+                number_of_archive_reactions_from_sources = database_session.scalar(
+                    statement=archive_reactions_from_sources_query.with_only_columns(
+                        count(
+                            expression=CaCSSQLiteDatabaseModelArchiveReaction.id
+                        )
+                    ).distinct()
+                )
+
+                for database_chunk_offset in range(0, number_of_archive_reactions_from_sources, database_chunk_limit):
+                    yield database_session.execute(
+                        statement=archive_reactions_from_sources_query.distinct().limit(
+                            limit=database_chunk_limit
+                        ).offset(
+                            offset=database_chunk_offset
+                        )
+                    ).all()
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_archive_reaction_patterns_from_sources(
+            self,
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]] = None,
+            database_chunk_limit: int = 10000
+    ) -> Generator[Sequence[Row[Tuple[CaCSSQLiteDatabaseModelArchiveReactionPattern, CaCSSQLiteDatabaseModelArchiveSource]]], None, None]:
+        """
+        Select the archive chemical reaction patterns from sources in the database.
+
+        :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
+            sources from which the chemical reaction patterns should be retrieved. The value `None` indicates that the
+            chemical reaction patterns should be retrieved from all archive sources.
+        :parameter database_chunk_limit: The chunk limit of the database.
+
+        :returns: The generator of the archive chemical reaction patterns from sources in the database.
+        """
+
+        try:
+            with self.__database_sessionmaker() as database_session:
+                archive_reaction_patterns_from_sources_query = \
+                    CaCSSQLiteDatabaseSelectUtility.construct_archive_reaction_patterns_from_sources_query(
+                        archive_source_names_versions_and_file_names=archive_source_names_versions_and_file_names
+                    )
+
+                number_of_archive_reaction_patterns_from_sources = database_session.scalar(
+                    statement=archive_reaction_patterns_from_sources_query.with_only_columns(
+                        count(
+                            expression=CaCSSQLiteDatabaseModelArchiveReactionPattern.id
+                        )
+                    ).distinct()
+                )
+
+                for database_chunk_offset in range(0, number_of_archive_reaction_patterns_from_sources, database_chunk_limit):
+                    yield database_session.execute(
+                        statement=archive_reaction_patterns_from_sources_query.distinct().limit(
+                            limit=database_chunk_limit
+                        ).offset(
+                            offset=database_chunk_offset
+                        )
+                    ).all()
 
         except Exception as exception_handle:
             if self.logger is not None:
