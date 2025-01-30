@@ -30,10 +30,16 @@ class CaCSSQLiteDatabaseSelectUtility:
             CaCSSQLiteDatabaseModelArchiveSource
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveCompoundSource,
-            onclause=CaCSSQLiteDatabaseModelArchiveCompound.id == CaCSSQLiteDatabaseModelArchiveCompoundSource.archive_compound_id
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompound.id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundSource.archive_compound_id
+            )
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveSource,
-            onclause=CaCSSQLiteDatabaseModelArchiveCompoundSource.archive_source_id == CaCSSQLiteDatabaseModelArchiveSource.id
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
         )
 
         if archive_source_names_versions_and_file_names is not None:
@@ -68,10 +74,16 @@ class CaCSSQLiteDatabaseSelectUtility:
             CaCSSQLiteDatabaseModelArchiveSource
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource,
-            onclause=CaCSSQLiteDatabaseModelArchiveCompoundPattern.id == CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id
+            )
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveSource,
-            onclause=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id == CaCSSQLiteDatabaseModelArchiveSource.id
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
         )
 
         if archive_source_names_versions_and_file_names is not None:
@@ -106,10 +118,16 @@ class CaCSSQLiteDatabaseSelectUtility:
             CaCSSQLiteDatabaseModelArchiveSource
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveReactionSource,
-            onclause=CaCSSQLiteDatabaseModelArchiveReaction.id == CaCSSQLiteDatabaseModelArchiveReactionSource.archive_reaction_id
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReaction.id ==
+                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_reaction_id
+            )
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveSource,
-            onclause=CaCSSQLiteDatabaseModelArchiveReactionSource.archive_source_id == CaCSSQLiteDatabaseModelArchiveSource.id
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
         )
 
         if archive_source_names_versions_and_file_names is not None:
@@ -144,10 +162,16 @@ class CaCSSQLiteDatabaseSelectUtility:
             CaCSSQLiteDatabaseModelArchiveSource
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveReactionPatternSource,
-            onclause=CaCSSQLiteDatabaseModelArchiveReactionPattern.id == CaCSSQLiteDatabaseModelArchiveReactionPatternSource.archive_reaction_pattern_id
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReactionPattern.id ==
+                CaCSSQLiteDatabaseModelArchiveReactionPatternSource.archive_reaction_pattern_id
+            )
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveSource,
-            onclause=CaCSSQLiteDatabaseModelArchiveReactionPatternSource.archive_source_id == CaCSSQLiteDatabaseModelArchiveSource.id
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReactionPatternSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
         )
 
         if archive_source_names_versions_and_file_names is not None:
