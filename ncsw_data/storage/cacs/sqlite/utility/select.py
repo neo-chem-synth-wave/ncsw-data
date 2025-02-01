@@ -1,9 +1,12 @@
 """ The ``ncsw_data.storage.cacs.sqlite.utility`` package ``select`` module. """
 
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, Optional, Tuple, Union
 
-from sqlalchemy.sql import intersect, select, tuple_
+from sqlalchemy.sql import and_, bindparam, case, cast, intersect, not_, or_, select, tuple_
+from sqlalchemy.sql.elements import literal
+from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.selectable import Select
+from sqlalchemy.sql.sqltypes import String
 
 from ncsw_data.storage.cacs.sqlite.model.archive import *
 from ncsw_data.storage.cacs.sqlite.model.workbench import *
@@ -298,9 +301,6 @@ class CaCSSQLiteDatabaseSelectUtility:
                 CaCSSQLiteDatabaseModelWorkbenchReaction
             )
 
-        elif len(workbench_reaction_queries) == 1:
-            return workbench_reaction_queries[0]
-
         else:
             return select(
                 CaCSSQLiteDatabaseModelWorkbenchReaction
@@ -311,3 +311,226 @@ class CaCSSQLiteDatabaseSelectUtility:
                     )
                 )
             )
+
+    @staticmethod
+    def construct_reversed_synthesis_routes_of_workbench_compound_query(
+            workbench_compound_id_or_smiles: Union[int, str],
+            reversed_synthesis_routes_maximum_depth: int
+    ) -> Select[Tuple[int, int, str, bool,  bool,  Optional[int],  Optional[int],  Optional[str]]]:
+        """
+        Construct the reversed chemical synthesis routes of a workbench chemical compound query of the database.
+
+        :parameter workbench_compound_id_or_smiles: The ID or SMILES string of the workbench chemical compound.
+        :parameter reversed_synthesis_routes_maximum_depth: The maximum depth of the reversed chemical synthesis routes.
+
+        :returns: The reversed chemical synthesis routes of a workbench chemical compound query of the database.
+        """
+
+        if isinstance(workbench_compound_id_or_smiles, int):
+            workbench_compound_id_or_smiles_column = CaCSSQLiteDatabaseModelWorkbenchCompound.id
+
+        else:
+            workbench_compound_id_or_smiles_column = CaCSSQLiteDatabaseModelWorkbenchCompound.smiles
+
+        workbench_synthesis_routes_base_query = select(
+            cast(
+                expression=CaCSSQLiteDatabaseModelWorkbenchCompound.id,
+                type_=String
+            ).label(
+                name="synthesis_route"
+            ),
+            literal(
+                value=0
+            ).label(
+                name="synthesis_route_depth"
+            ),
+            not_(
+                CaCSSQLiteDatabaseModelWorkbenchCompound.is_building_block
+            ).label(
+                name="expand_synthesis_route"
+            ),
+            CaCSSQLiteDatabaseModelWorkbenchCompound.id.label(
+                name="reaction_product_compound_id"
+            ),
+            CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.label(
+                name="reaction_product_compound_smiles"
+            ),
+            CaCSSQLiteDatabaseModelWorkbenchCompound.is_building_block.label(
+                name="reaction_product_compound_is_building_block"
+            ),
+            literal(
+                value=None
+            ).label(
+                name="prior_reaction_id"
+            ),
+            CaCSSQLiteDatabaseModelWorkbenchReaction.id.label(
+                name="posterior_reaction_id"
+            ),
+            CaCSSQLiteDatabaseModelWorkbenchReaction.smiles.label(
+                name="posterior_reaction_smiles"
+            )
+        ).select_from(
+            CaCSSQLiteDatabaseModelWorkbenchCompound
+        ).join(
+            target=CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchCompound.id ==
+                CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_compound_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelWorkbenchReaction,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_reaction_id ==
+                CaCSSQLiteDatabaseModelWorkbenchReaction.id
+            )
+        ).where(
+            workbench_compound_id_or_smiles_column == bindparam(
+                key="workbench_compound_id_or_smiles",
+                value=workbench_compound_id_or_smiles
+            )
+        ).cte(
+            recursive=True
+        )
+
+        synthesis_route_column_value = workbench_synthesis_routes_base_query.c.synthesis_route + literal(
+            value="->"
+        ) + cast(
+            expression=CaCSSQLiteDatabaseModelWorkbenchCompound.id,
+            type_=String
+        )
+
+        synthesis_route_depth_column_value = workbench_synthesis_routes_base_query.c.synthesis_route_depth + 1
+
+        expand_synthesis_route_column_value = and_(
+            workbench_synthesis_routes_base_query.c.expand_synthesis_route,
+            not_(
+                or_(
+                    func.instr(
+                        workbench_synthesis_routes_base_query.c.synthesis_route,
+                        literal(
+                            value="->"
+                        ) + cast(
+                            expression=CaCSSQLiteDatabaseModelWorkbenchCompound.id,
+                            type_=String
+                        )
+                    ) > 0,
+                    and_(
+                        workbench_compound_id_or_smiles_column == bindparam(
+                            key="workbench_compound_id_or_smiles",
+                            value=workbench_compound_id_or_smiles
+                        ),
+                        synthesis_route_depth_column_value > literal(
+                            value=1
+                        )
+                    )
+                )
+            )
+        )
+
+        workbench_synthesis_routes_recursive_query = select(
+            synthesis_route_column_value.label(
+                name="synthesis_route"
+            ),
+            synthesis_route_depth_column_value.label(
+                name="synthesis_route_depth"
+            ),
+            expand_synthesis_route_column_value.label(
+                name="expand_synthesis_route"
+            ),
+            CaCSSQLiteDatabaseModelWorkbenchCompound.id.label(
+                name="reaction_product_compound_id"
+            ),
+            CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.label(
+                name="reaction_product_compound_smiles"
+            ),
+            CaCSSQLiteDatabaseModelWorkbenchCompound.is_building_block.label(
+                name="reaction_product_compound_is_building_block"
+            ),
+            workbench_synthesis_routes_base_query.c.posterior_reaction_id.label(
+                name="prior_reaction_id"
+            ),
+            case(
+                (expand_synthesis_route_column_value, CaCSSQLiteDatabaseModelWorkbenchReaction.id),
+                else_=literal(
+                    value=None
+                )
+            ).label(
+                name="posterior_reaction_id"
+            ),
+            case(
+                (expand_synthesis_route_column_value, CaCSSQLiteDatabaseModelWorkbenchReaction.smiles),
+                else_=literal(
+                    value=None
+                )
+            ).label(
+                name="posterior_reaction_smiles"
+            )
+        ).select_from(
+            workbench_synthesis_routes_base_query.join(
+                right=CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound,
+                onclause=(
+                    workbench_synthesis_routes_base_query.c.posterior_reaction_id ==
+                    CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_reaction_id
+                )
+            ).join(
+                right=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                onclause=(
+                    CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_compound_id ==
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                )
+            ).outerjoin(
+                right=CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound,
+                onclause=(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.id ==
+                    CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_compound_id
+                )
+            ).outerjoin(
+                right=CaCSSQLiteDatabaseModelWorkbenchReaction,
+                onclause=(
+                    CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_reaction_id ==
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                )
+            )
+        ).where(
+            workbench_synthesis_routes_base_query.c.synthesis_route_depth < bindparam(
+                key="reversed_synthesis_routes_maximum_depth",
+                value=reversed_synthesis_routes_maximum_depth
+            )
+        )
+
+        workbench_synthesis_routes_query = workbench_synthesis_routes_base_query.union_all(
+            workbench_synthesis_routes_recursive_query
+        )
+
+        reaction_product_compound_is_dead_end = case(
+            (or_(
+                workbench_synthesis_routes_query.c.posterior_reaction_id.is_(
+                    None
+                ),
+                workbench_synthesis_routes_query.c.expand_synthesis_route == literal(
+                    value=False
+                )
+            ), literal(
+                value=True
+            )),
+            else_=literal(
+                value=False
+            )
+        )
+
+        return select(
+            workbench_synthesis_routes_query.c.synthesis_route_depth,
+            workbench_synthesis_routes_query.c.reaction_product_compound_id,
+            workbench_synthesis_routes_query.c.reaction_product_compound_smiles,
+            workbench_synthesis_routes_query.c.reaction_product_compound_is_building_block,
+            reaction_product_compound_is_dead_end.label(
+                name="reaction_product_compound_is_dead_end"
+            ),
+            workbench_synthesis_routes_query.c.prior_reaction_id,
+            workbench_synthesis_routes_query.c.posterior_reaction_id,
+            workbench_synthesis_routes_query.c.posterior_reaction_smiles
+        ).order_by(
+            workbench_synthesis_routes_query.c.synthesis_route_depth,
+            workbench_synthesis_routes_query.c.prior_reaction_id,
+            workbench_synthesis_routes_query.c.reaction_product_compound_id
+        )

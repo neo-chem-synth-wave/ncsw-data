@@ -2,7 +2,7 @@
 
 from logging import Logger
 from math import ceil
-from typing import Callable, Generator, Iterable, Optional, Sequence, Tuple
+from typing import Callable, Dict, Generator, Iterable, List, Optional, Sequence, Tuple, Union
 
 from sqlalchemy.engine.create import create_engine
 from sqlalchemy.engine.row import Row
@@ -900,6 +900,52 @@ class CaCSSQLiteDatabase(DataStorageBase):
                             offset=database_chunk_offset
                         )
                     ).all()
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_reversed_synthesis_routes_of_workbench_compound(
+            self,
+            workbench_compound_id_or_smiles: Union[int, str],
+            reversed_synthesis_routes_maximum_depth: int = 10
+    ) -> List[Dict[str, Union[None, bool, int, str]]]:
+        """
+        Select the reversed chemical synthesis routes of a workbench chemical compound from the database.
+
+        :parameter workbench_compound_id_or_smiles: The ID or SMILES string of the workbench chemical compound.
+        :parameter reversed_synthesis_routes_maximum_depth: The maximum depth of the reversed chemical synthesis routes.
+
+        :returns: The generator of reversed chemical synthesis routes of the workbench chemical compound from the
+            database.
+        """
+
+        try:
+            reversed_synthesis_routes_of_workbench_compound_query = \
+                CaCSSQLiteDatabaseSelectUtility.construct_reversed_synthesis_routes_of_workbench_compound_query(
+                    workbench_compound_id_or_smiles=workbench_compound_id_or_smiles,
+                    reversed_synthesis_routes_maximum_depth=reversed_synthesis_routes_maximum_depth
+                )
+
+            reversed_synthesis_routes_of_workbench_compound = list()
+
+            with self.__database_sessionmaker() as session:
+                for reversed_synthesis_route_of_workbench_compound in session.execute(
+                    statement=reversed_synthesis_routes_of_workbench_compound_query,
+                    params={
+                        "workbench_compound_id_or_smiles": workbench_compound_id_or_smiles,
+                        "reversed_synthesis_routes_maximum_depth": reversed_synthesis_routes_maximum_depth,
+                    }
+                ).all():
+                    reversed_synthesis_routes_of_workbench_compound.append(
+                        dict(reversed_synthesis_route_of_workbench_compound._mapping)
+                    )
+
+            return reversed_synthesis_routes_of_workbench_compound
 
         except Exception as exception_handle:
             if self.logger is not None:
