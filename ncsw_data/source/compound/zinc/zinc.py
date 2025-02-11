@@ -4,16 +4,14 @@ from os import PathLike
 from re import findall
 from typing import Dict, Union
 
-from ncsw_data.source.base.base import BaseDataSource
-from ncsw_data.source.base.utility.download import BaseDataSourceDownloadUtility
+from ncsw_data.source.base.base import DataSourceBase
+from ncsw_data.source.base.utility.download import DataSourceDownloadUtility
 
-from ncsw_data.source.compound.zinc.utility.download import ZINCCompoundDatabaseDownloadUtility
-from ncsw_data.source.compound.zinc.utility.extraction import ZINCCompoundDatabaseExtractionUtility
-from ncsw_data.source.compound.zinc.utility.formatting import ZINCCompoundDatabaseFormattingUtility
+from ncsw_data.source.compound.zinc.utility import *
 
 
-class ZINCCompoundDatabase(BaseDataSource):
-    """ The `ZINC <https://zinc20.docking.org>`_ chemical compound database class. """
+class ZINCCompoundDatabase(DataSourceBase):
+    """ The `ZINC <https://zinc.docking.org>`_ chemical compound database class. """
 
     def get_supported_versions(
             self
@@ -25,41 +23,35 @@ class ZINCCompoundDatabase(BaseDataSource):
         """
 
         try:
-            doi_url = "https://doi.org/10.1021/acs.jcim.0c00675"
-
             supported_versions = dict()
-
-            pattern = r"href=\"([^\.]+)\.smi\.gz"
 
             http_get_request_url = "https://files.docking.org/bb/current"
 
             for file_name in findall(
-                pattern=pattern,
-                string=BaseDataSourceDownloadUtility.send_http_get_request(
-                    http_get_request_url=http_get_request_url
+                pattern=r"href=\"([^\.]+)\.smi\.gz",
+                string=DataSourceDownloadUtility.send_http_get_request(
+                    url=http_get_request_url
                 ).text
             ):
                 supported_versions[
                     "v_building_blocks_{file_name:s}".format(
                         file_name=file_name
                     )
-                ] = doi_url
-
-            pattern = r"href=\"([^\.]+)\.src\.txt"
+                ] = "https://doi.org/10.1021/acs.jcim.0c00675"
 
             http_get_request_url = "https://files.docking.org/catalogs/source"
 
             for file_name in findall(
-                pattern=pattern,
-                string=BaseDataSourceDownloadUtility.send_http_get_request(
-                    http_get_request_url=http_get_request_url
+                pattern=r"href=\"([^\.]+)\.src\.txt",
+                string=DataSourceDownloadUtility.send_http_get_request(
+                    url=http_get_request_url
                 ).text
             ):
                 supported_versions[
                     "v_catalog_{file_name:s}".format(
                         file_name=file_name
                     )
-                ] = doi_url
+                ] = "https://doi.org/10.1021/acs.jcim.0c00675"
 
             return supported_versions
 
