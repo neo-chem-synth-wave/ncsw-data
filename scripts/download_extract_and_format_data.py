@@ -7,7 +7,9 @@ from pathlib import Path
 from shutil import rmtree
 
 from ncsw_data.source.compound import CompoundDataSource
+from ncsw_data.source.compound_pattern import CompoundPatternDataSource
 from ncsw_data.source.reaction import ReactionDataSource
+from ncsw_data.source.reaction_pattern import ReactionPatternDataSource
 
 
 def get_script_arguments() -> Namespace:
@@ -25,7 +27,9 @@ def get_script_arguments() -> Namespace:
         type=str,
         choices=[
             "compound",
+            "compound_pattern",
             "reaction",
+            "reaction_pattern",
         ],
         help="The indicator of the data source category."
     )
@@ -42,6 +46,13 @@ def get_script_arguments() -> Namespace:
         "--data_source_name",
         type=str,
         choices=[
+            "chembl",
+            "crd",
+            "miscellaneous",
+            "ord",
+            "rdkit",
+            "retro_rules",
+            "rhea",
             "uspto",
             "zinc",
         ],
@@ -67,6 +78,14 @@ def get_script_arguments() -> Namespace:
         "--output_directory_path",
         type=str,
         help="The path to the output directory where the data should be formatted."
+    )
+
+    argument_parser.add_argument(
+        "-nop",
+        "--number_of_processes",
+        default=1,
+        type=str,
+        help="The number of processes, if relevant."
     )
 
     return argument_parser.parse_args()
@@ -119,8 +138,18 @@ if __name__ == "__main__":
             logger=script_logger
         )
 
+    elif script_arguments.data_source_category == "compound_pattern":
+        data_source = CompoundPatternDataSource(
+            logger=script_logger
+        )
+
     elif script_arguments.data_source_category == "reaction":
         data_source = ReactionDataSource(
+            logger=script_logger
+        )
+
+    elif script_arguments.data_source_category == "reaction_pattern":
+        data_source = ReactionPatternDataSource(
             logger=script_logger
         )
 
@@ -171,7 +200,8 @@ if __name__ == "__main__":
             name=script_arguments.data_source_name,
             version=script_arguments.data_source_version,
             input_directory_path=temporary_output_directory_path,
-            output_directory_path=script_arguments.output_directory_path
+            output_directory_path=script_arguments.output_directory_path,
+            number_of_processes=script_arguments.number_of_processes
         )
 
         rmtree(
