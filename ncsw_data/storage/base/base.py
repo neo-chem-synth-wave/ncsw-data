@@ -25,9 +25,9 @@ class DataStorageBase(ABC):
             self
     ) -> Optional[Logger]:
         """
-        Get the logger.
+        Get the value of the logger.
 
-        :returns: The logger.
+        :returns: The value of the logger.
         """
 
         return self.__logger
@@ -38,9 +38,9 @@ class DataStorageBase(ABC):
             value: Optional[Logger]
     ) -> None:
         """
-        Set the logger.
+        Set the value of the logger.
 
-        :parameter value: The logger. The value `None` indicates that the logger should not be utilized.
+        :parameter value: The value of the logger. The value `None` indicates that the logger should not be utilized.
         """
 
         self.__logger = value
