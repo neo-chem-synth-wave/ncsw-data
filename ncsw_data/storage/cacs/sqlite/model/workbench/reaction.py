@@ -57,3 +57,9 @@ class CaCSSQLiteDatabaseModelWorkbenchReaction(
         secondary="workbench_reaction_product_compound",
         back_populates="workbench_reactions_as_product"
     )
+
+    workbench_reaction_patterns = relationship(
+        "CaCSSQLiteDatabaseModelWorkbenchReactionPattern",
+        secondary="workbench_reaction_transformation_pattern",
+        back_populates="workbench_reactions"
+    )

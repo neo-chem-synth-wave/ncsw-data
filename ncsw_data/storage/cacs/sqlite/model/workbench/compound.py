@@ -40,12 +40,6 @@ class CaCSSQLiteDatabaseModelWorkbenchCompound(
         nullable=False
     )
 
-    is_intermediate: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        nullable=False
-    )
-
     archive_compounds = relationship(
         "CaCSSQLiteDatabaseModelArchiveCompound",
         secondary="workbench_compound_archive",
@@ -68,4 +62,10 @@ class CaCSSQLiteDatabaseModelWorkbenchCompound(
         "CaCSSQLiteDatabaseModelWorkbenchReaction",
         secondary="workbench_reaction_product_compound",
         back_populates="workbench_product_compounds"
+    )
+
+    workbench_compound_patterns = relationship(
+        "CaCSSQLiteDatabaseModelWorkbenchCompoundPattern",
+        secondary="workbench_compound_structure_pattern",
+        back_populates="workbench_compounds"
     )
