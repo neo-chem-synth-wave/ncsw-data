@@ -20,7 +20,6 @@ class CaCSSQLiteDatabaseModelReprMethodMixin:
         :returns: The string representation of a database model instance.
         """
 
-        # noinspection PyUnresolvedReferences
         return "{table_name:s}({table_column_names_and_values:s})".format(
             table_name=self.__class__.__tablename__,
             table_column_names_and_values=", ".join(
