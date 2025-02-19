@@ -41,3 +41,9 @@ class CaCSSQLiteDatabaseModelArchiveCompoundPattern(
         secondary="archive_compound_pattern_source",
         back_populates="archive_compound_patterns"
     )
+
+    workbench_compound_patterns = relationship(
+        "CaCSSQLiteDatabaseModelWorkbenchCompoundPattern",
+        secondary="workbench_compound_pattern_archive",
+        back_populates="archive_compound_patterns"
+    )

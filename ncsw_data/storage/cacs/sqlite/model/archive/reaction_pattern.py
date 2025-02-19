@@ -41,3 +41,9 @@ class CaCSSQLiteDatabaseModelArchiveReactionPattern(
         secondary="archive_reaction_pattern_source",
         back_populates="archive_reaction_patterns"
     )
+
+    workbench_reaction_patterns = relationship(
+        "CaCSSQLiteDatabaseModelWorkbenchReactionPattern",
+        secondary="workbench_reaction_pattern_archive",
+        back_populates="archive_reaction_patterns"
+    )
