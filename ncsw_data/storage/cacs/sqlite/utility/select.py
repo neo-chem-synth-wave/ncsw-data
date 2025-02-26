@@ -11,20 +11,54 @@ from sqlalchemy.sql.sqltypes import String
 from ncsw_data.storage.cacs.sqlite.model.archive import *
 from ncsw_data.storage.cacs.sqlite.model.workbench import *
 
+from ncsw_data.storage.cacs.sqlite.utility.typing import (
+    ArchiveCompoundsTuple,
+    ArchiveCompoundsFromSourcesTuple,
+    ArchiveCompoundPatternsTuple,
+    ArchiveCompoundPatternsFromSourcesTuple,
+    ArchiveReactionsTuple,
+    ArchiveReactionsFromSourcesTuple,
+    ArchiveReactionPatternsTuple,
+    ArchiveReactionPatternsFromSourcesTuple,
+    WorkbenchCompoundsTuple,
+    WorkbenchCompoundsFromSourcesTuple,
+    WorkbenchCompoundPatternsTuple,
+    WorkbenchCompoundPatternsFromSourcesTuple,
+    WorkbenchReactionsTuple,
+    WorkbenchReactionsFromSourcesTuple,
+    WorkbenchReactionPatternsTuple,
+    WorkbenchReactionPatternsFromSourcesTuple,
+)
+
 
 class CaCSSQLiteDatabaseSelectUtility:
     """ The computer-assisted chemical synthesis (CaCS) SQLite database select utility class. """
 
+    ####################################################################################################################
+    # Archive Compounds
+    ####################################################################################################################
+
+    @staticmethod
+    def construct_archive_compounds_query() -> Select[ArchiveCompoundsTuple]:
+        """
+        Construct the archive chemical compounds query of the database.
+
+        :returns: The archive chemical compounds query of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelArchiveCompound
+        )
+
     @staticmethod
     def construct_archive_compounds_from_sources_query(
-            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]] = None
-    ) -> Select[Tuple[CaCSSQLiteDatabaseModelArchiveCompound, CaCSSQLiteDatabaseModelArchiveSource]]:
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[ArchiveCompoundsFromSourcesTuple]:
         """
         Construct the archive chemical compounds from sources query of the database.
 
         :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
-            sources from which the chemical compounds should be retrieved. The value `None` indicates that the chemical
-            compounds should be retrieved from all archive sources.
+            sources from which the archive chemical compounds should be retrieved.
 
         :returns: The archive chemical compounds from sources query of the database.
         """
@@ -59,39 +93,87 @@ class CaCSSQLiteDatabaseSelectUtility:
 
         return archive_compounds_from_sources_query
 
+    ####################################################################################################################
+    # Workbench Compounds
+    ####################################################################################################################
+
     @staticmethod
-    def construct_archive_compound_patterns_from_sources_query(
-            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]] = None
-    ) -> Select[Tuple[CaCSSQLiteDatabaseModelArchiveCompoundPattern, CaCSSQLiteDatabaseModelArchiveSource]]:
+    def construct_workbench_compounds_query(
+            workbench_compound_is_building_block: Optional[bool]
+    ) -> Select[WorkbenchCompoundsTuple]:
         """
-        Construct the archive chemical compound patterns from sources query of the database.
+        Construct the workbench chemical compounds query of the database.
 
+        :parameter workbench_compound_is_building_block: The boolean indicator of whether the workbench building block
+            chemical compounds should be retrieved.
+
+        :returns: The workbench chemical compounds query of the database.
+        """
+
+        workbench_compounds_query = select(
+            CaCSSQLiteDatabaseModelWorkbenchCompound
+        )
+
+        if workbench_compound_is_building_block is not None:
+            workbench_compounds_query = workbench_compounds_query.where(
+                CaCSSQLiteDatabaseModelWorkbenchCompound.is_building_block == workbench_compound_is_building_block
+            )
+
+        return workbench_compounds_query
+
+    @staticmethod
+    def construct_workbench_compounds_from_sources_query(
+            workbench_compound_is_building_block: Optional[bool],
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[WorkbenchCompoundsFromSourcesTuple]:
+        """
+        Construct the workbench chemical compounds from sources query of the database.
+
+        :parameter workbench_compound_is_building_block: The boolean indicator of whether the workbench building block
+            chemical compounds should be retrieved.
         :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
-            sources from which the chemical compound patterns should be retrieved. The value `None` indicates that the
-            chemical compound patterns should be retrieved from all archive sources.
+            sources from which the workbench chemical compounds should be retrieved.
 
-        :returns: The archive chemical compound patterns from sources query of the database.
+        :returns: The workbench chemical compounds from sources query of the database.
         """
 
-        archive_compound_patterns_from_sources_query = select(
-            CaCSSQLiteDatabaseModelArchiveCompoundPattern,
+        workbench_compounds_from_sources_query = select(
+            CaCSSQLiteDatabaseModelWorkbenchCompound,
+            CaCSSQLiteDatabaseModelArchiveCompound,
             CaCSSQLiteDatabaseModelArchiveSource
         ).join(
-            target=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource,
+            target=CaCSSQLiteDatabaseModelWorkbenchCompoundArchive,
             onclause=(
-                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id ==
-                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id
+                CaCSSQLiteDatabaseModelWorkbenchCompound.id ==
+                CaCSSQLiteDatabaseModelWorkbenchCompoundArchive.workbench_compound_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveCompound,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundArchive.archive_compound_id ==
+                CaCSSQLiteDatabaseModelArchiveCompound.id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveCompoundSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompound.id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundSource.archive_compound_id
             )
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveSource,
             onclause=(
-                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundSource.archive_source_id ==
                 CaCSSQLiteDatabaseModelArchiveSource.id
             )
         )
 
+        if workbench_compound_is_building_block is not None:
+            workbench_compounds_from_sources_query = workbench_compounds_from_sources_query.where(
+                CaCSSQLiteDatabaseModelWorkbenchCompound.is_building_block == workbench_compound_is_building_block
+            )
+
         if archive_source_names_versions_and_file_names is not None:
-            archive_compound_patterns_from_sources_query = archive_compound_patterns_from_sources_query.where(
+            workbench_compounds_from_sources_query = workbench_compounds_from_sources_query.where(
                 tuple_(
                     CaCSSQLiteDatabaseModelArchiveSource.name,
                     CaCSSQLiteDatabaseModelArchiveSource.version,
@@ -101,18 +183,33 @@ class CaCSSQLiteDatabaseSelectUtility:
                 )
             )
 
-        return archive_compound_patterns_from_sources_query
+        return workbench_compounds_from_sources_query
+
+    ####################################################################################################################
+    # Archive Reactions
+    ####################################################################################################################
+
+    @staticmethod
+    def construct_archive_reactions_query() -> Select[ArchiveReactionsTuple]:
+        """
+        Construct the archive chemical reactions query of the database.
+
+        :returns: The archive chemical reactions query of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelArchiveReaction
+        )
 
     @staticmethod
     def construct_archive_reactions_from_sources_query(
-            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]] = None
-    ) -> Select[Tuple[CaCSSQLiteDatabaseModelArchiveReaction, CaCSSQLiteDatabaseModelArchiveSource]]:
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[ArchiveReactionsFromSourcesTuple]:
         """
         Construct the archive chemical reactions from sources query of the database.
 
         :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
-            sources from which the chemical reactions should be retrieved. The value `None` indicates that the chemical
-            reactions should be retrieved from all archive sources.
+            sources from which the archive chemical reactions should be retrieved.
 
         :returns: The archive chemical reactions from sources query of the database.
         """
@@ -147,16 +244,416 @@ class CaCSSQLiteDatabaseSelectUtility:
 
         return archive_reactions_from_sources_query
 
+    ####################################################################################################################
+    # Workbench Reactions
+    ####################################################################################################################
+
+    @staticmethod
+    def construct_workbench_reactions_query(
+            workbench_reaction_reactant_compound_smiles_strings: Optional[Iterable[str]],
+            workbench_reaction_spectator_compound_smiles_strings: Optional[Iterable[str]],
+            workbench_reaction_product_compound_smiles_strings: Optional[Iterable[str]]
+    ) -> Select[WorkbenchReactionsTuple]:
+        """
+        Construct the workbench chemical reactions query of the database.
+
+        :parameter workbench_reaction_reactant_compound_smiles_strings: The SMILES strings of the reactant compounds
+            that should be present in the workbench chemical reaction.
+        :parameter workbench_reaction_spectator_compound_smiles_strings: The SMILES strings of the spectator compounds
+            that should be present in the workbench chemical reaction.
+        :parameter workbench_reaction_product_compound_smiles_strings: The SMILES strings of the product compounds that
+            should be present in the workbench chemical reaction.
+
+        :returns: The workbench chemical reactions query of the database.
+        """
+
+        workbench_reactions_queries = list()
+
+        if workbench_reaction_reactant_compound_smiles_strings is not None:
+            workbench_reactions_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_reactant_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        if workbench_reaction_spectator_compound_smiles_strings is not None:
+            workbench_reactions_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_spectator_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        if workbench_reaction_product_compound_smiles_strings is not None:
+            workbench_reactions_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_product_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        workbench_reactions_query = select(
+            CaCSSQLiteDatabaseModelWorkbenchReaction
+        )
+
+        if len(workbench_reactions_queries) > 0:
+            workbench_reactions_query = workbench_reactions_query.where(
+                CaCSSQLiteDatabaseModelWorkbenchReaction.id.in_(
+                    intersect(
+                        *workbench_reactions_queries
+                    )
+                )
+            )
+
+        return workbench_reactions_query
+
+    @staticmethod
+    def construct_workbench_reactions_from_sources_query(
+            workbench_reaction_reactant_compound_smiles_strings: Optional[Iterable[str]],
+            workbench_reaction_spectator_compound_smiles_strings: Optional[Iterable[str]],
+            workbench_reaction_product_compound_smiles_strings: Optional[Iterable[str]],
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[WorkbenchReactionsFromSourcesTuple]:
+        """
+        Construct the workbench chemical reactions from sources query of the database.
+
+        :parameter workbench_reaction_reactant_compound_smiles_strings: The SMILES strings of the reactant compounds
+            that should be present in the workbench chemical reaction.
+        :parameter workbench_reaction_spectator_compound_smiles_strings: The SMILES strings of the spectator compounds
+            that should be present in the workbench chemical reaction.
+        :parameter workbench_reaction_product_compound_smiles_strings: The SMILES strings of the product compounds that
+            should be present in the workbench chemical reaction.
+        :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
+            sources from which the workbench chemical reactions should be retrieved.
+
+        :returns: The workbench chemical reactions from sources query of the database.
+        """
+
+        workbench_reactions_from_sources_queries = list()
+
+        if workbench_reaction_reactant_compound_smiles_strings is not None:
+            workbench_reactions_from_sources_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_reactant_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        if workbench_reaction_spectator_compound_smiles_strings is not None:
+            workbench_reactions_from_sources_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_spectator_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        if workbench_reaction_product_compound_smiles_strings is not None:
+            workbench_reactions_from_sources_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_reaction_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_compound_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
+                        other=workbench_reaction_product_compound_smiles_strings
+                    )
+                ).distinct()
+            )
+
+        workbench_reactions_from_sources_query = select(
+            CaCSSQLiteDatabaseModelWorkbenchReaction,
+            CaCSSQLiteDatabaseModelArchiveReaction,
+            CaCSSQLiteDatabaseModelArchiveSource
+        ).join(
+            target=CaCSSQLiteDatabaseModelWorkbenchReactionArchive,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
+                CaCSSQLiteDatabaseModelWorkbenchReactionArchive.workbench_reaction_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveReaction,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchReactionArchive.archive_reaction_id ==
+                CaCSSQLiteDatabaseModelArchiveReaction.id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveReactionSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReaction.id ==
+                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_reaction_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
+        )
+
+        if len(workbench_reactions_from_sources_queries) > 0:
+            workbench_reactions_from_sources_query = workbench_reactions_from_sources_query.where(
+                CaCSSQLiteDatabaseModelWorkbenchReaction.id.in_(
+                    other=intersect(
+                        *workbench_reactions_from_sources_queries
+                    )
+                )
+            )
+
+        if archive_source_names_versions_and_file_names is not None:
+            workbench_reactions_from_sources_query = workbench_reactions_from_sources_query.where(
+                tuple_(
+                    CaCSSQLiteDatabaseModelArchiveSource.name,
+                    CaCSSQLiteDatabaseModelArchiveSource.version,
+                    CaCSSQLiteDatabaseModelArchiveSource.file_name
+                ).in_(
+                    other=archive_source_names_versions_and_file_names
+                )
+            )
+
+        return workbench_reactions_from_sources_query
+
+    ####################################################################################################################
+    # Archive Compound Patterns
+    ####################################################################################################################
+
+    @staticmethod
+    def construct_archive_compound_patterns_query() -> Select[ArchiveCompoundPatternsTuple]:
+        """
+        Construct the archive chemical compound patterns query of the database.
+
+        :returns: The archive chemical compound patterns query of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelArchiveCompoundPattern
+        )
+
+    @staticmethod
+    def construct_archive_compound_patterns_from_sources_query(
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[ArchiveCompoundPatternsFromSourcesTuple]:
+        """
+        Construct the archive chemical compound patterns from sources query of the database.
+
+        :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
+            sources from which the archive chemical compound patterns should be retrieved.
+
+        :returns: The archive chemical compound patterns from sources query of the database.
+        """
+
+        archive_compound_patterns_from_sources_query = select(
+            CaCSSQLiteDatabaseModelArchiveCompoundPattern,
+            CaCSSQLiteDatabaseModelArchiveSource
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
+        )
+
+        if archive_source_names_versions_and_file_names is not None:
+            archive_compound_patterns_from_sources_query = archive_compound_patterns_from_sources_query.where(
+                tuple_(
+                    CaCSSQLiteDatabaseModelArchiveSource.name,
+                    CaCSSQLiteDatabaseModelArchiveSource.version,
+                    CaCSSQLiteDatabaseModelArchiveSource.file_name
+                ).in_(
+                    other=archive_source_names_versions_and_file_names
+                )
+            )
+
+        return archive_compound_patterns_from_sources_query
+
+    ####################################################################################################################
+    # Workbench Compound Patterns
+    ####################################################################################################################
+
+    @staticmethod
+    def construct_workbench_compound_patterns_query() -> Select[WorkbenchCompoundPatternsTuple]:
+        """
+        Construct the workbench chemical compound patterns query of the database.
+
+        :returns: The workbench chemical compound patterns query of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelWorkbenchCompoundPattern
+        )
+
+    @staticmethod
+    def construct_workbench_compound_patterns_from_sources_query(
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[WorkbenchCompoundPatternsFromSourcesTuple]:
+        """
+        Construct the workbench chemical compound patterns from sources query of the database.
+
+        :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
+            sources from which the workbench chemical compound patterns should be retrieved.
+
+        :returns: The workbench chemical compound patterns from sources query of the database.
+        """
+
+        workbench_compound_patterns_from_sources_query = select(
+            CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
+            CaCSSQLiteDatabaseModelArchiveCompoundPattern,
+            CaCSSQLiteDatabaseModelArchiveSource
+        ).join(
+            target=CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id ==
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.workbench_compound_pattern_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveCompoundPattern,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.archive_compound_pattern_id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
+        )
+
+        if archive_source_names_versions_and_file_names is not None:
+            workbench_compound_patterns_from_sources_query = workbench_compound_patterns_from_sources_query.where(
+                tuple_(
+                    CaCSSQLiteDatabaseModelArchiveSource.name,
+                    CaCSSQLiteDatabaseModelArchiveSource.version,
+                    CaCSSQLiteDatabaseModelArchiveSource.file_name
+                ).in_(
+                    other=archive_source_names_versions_and_file_names
+                )
+            )
+
+        return workbench_compound_patterns_from_sources_query
+
+    ####################################################################################################################
+    # Archive Reaction Patterns
+    ####################################################################################################################
+
+    @staticmethod
+    def construct_archive_reaction_patterns_query() -> Select[ArchiveReactionPatternsTuple]:
+        """
+        Construct the archive chemical reaction patterns query of the database.
+
+        :returns: The archive chemical reaction patterns query of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelArchiveReactionPattern
+        )
+
     @staticmethod
     def construct_archive_reaction_patterns_from_sources_query(
-            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]] = None
-    ) -> Select[Tuple[CaCSSQLiteDatabaseModelArchiveReactionPattern, CaCSSQLiteDatabaseModelArchiveSource]]:
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[ArchiveReactionPatternsFromSourcesTuple]:
         """
         Construct the archive chemical reaction patterns from sources query of the database.
 
         :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
-            sources from which the chemical reaction patterns should be retrieved. The value `None` indicates that the
-            chemical reaction patterns should be retrieved from all archive sources.
+            sources from which the archive chemical reaction patterns should be retrieved.
 
         :returns: The archive chemical reaction patterns from sources query of the database.
         """
@@ -191,126 +688,264 @@ class CaCSSQLiteDatabaseSelectUtility:
 
         return archive_reaction_patterns_from_sources_query
 
-    @staticmethod
-    def construct_workbench_compounds_query() -> Select[Tuple[CaCSSQLiteDatabaseModelWorkbenchCompound]]:
-        """
-        Construct the workbench chemical compounds query of the database.
-
-        :returns: The workbench chemical compounds query of the database.
-        """
-
-        return select(
-            CaCSSQLiteDatabaseModelWorkbenchCompound
-        )
+    ####################################################################################################################
+    # Workbench Reaction Patterns
+    ####################################################################################################################
 
     @staticmethod
-    def construct_workbench_reactions_query(
-            workbench_reaction_reactant_compound_smiles_strings: Optional[Iterable[str]] = None,
-            workbench_reaction_spectator_compound_smiles_strings: Optional[Iterable[str]] = None,
-            workbench_reaction_product_compound_smiles_strings: Optional[Iterable[str]] = None
-    ) -> Select[Tuple[CaCSSQLiteDatabaseModelWorkbenchReaction]]:
+    def construct_workbench_reaction_patterns_query(
+            workbench_reaction_pattern_reactant_compound_smarts_strings: Optional[Iterable[str]],
+            workbench_reaction_pattern_spectator_compound_smarts_strings: Optional[Iterable[str]],
+            workbench_reaction_pattern_product_compound_smarts_strings: Optional[Iterable[str]]
+    ) -> Select[WorkbenchReactionPatternsTuple]:
         """
-        Construct the workbench chemical reactions query of the database.
+        Construct the workbench chemical reaction patterns query of the database.
 
-        :parameter workbench_reaction_reactant_compound_smiles_strings: The reactant compound SMILES strings of the
-            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
-            chemical reactions should be retrieved regardless of the reactant chemical compounds.
-        :parameter workbench_reaction_spectator_compound_smiles_strings: The spectator compound SMILES strings of the
-            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
-            chemical reactions should be retrieved regardless of the spectator chemical compounds.
-        :parameter workbench_reaction_product_compound_smiles_strings: The product compound SMILES strings of the
-            workbench chemical reactions that should be retrieved. The value `None` indicates that the workbench
-            chemical reactions should be retrieved regardless of the product chemical compounds.
+        :parameter workbench_reaction_pattern_reactant_compound_smarts_strings: The SMARTS strings of the reactant
+            compound patterns that should be present in the workbench chemical reaction patterns.
+        :parameter workbench_reaction_pattern_spectator_compound_smarts_strings: The SMARTS strings of the spectator
+            compound patterns that should be present in the workbench chemical reaction patterns.
+        :parameter workbench_reaction_pattern_product_compound_smarts_strings: The SMARTS strings of the product
+            compound patterns that should be present in the workbench chemical reaction patterns.
 
-        :returns: The workbench chemical reactions query of the database.
+        :returns: The workbench chemical reaction patterns query of the database.
         """
 
-        workbench_reaction_queries = list()
+        workbench_reaction_pattern_queries = list()
 
-        if workbench_reaction_reactant_compound_smiles_strings is not None:
-            workbench_reaction_queries.append(
+        if workbench_reaction_pattern_reactant_compound_smarts_strings is not None:
+            workbench_reaction_pattern_queries.append(
                 select(
-                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                    CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id
                 ).join(
-                    target=CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound,
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompoundPattern,
                     onclause=(
-                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
-                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_reaction_id
+                        CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompoundPattern.workbench_reaction_pattern_id
                     )
                 ).join(
-                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
                     onclause=(
-                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompound.workbench_compound_id ==
-                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompoundPattern.workbench_compound_pattern_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
                     )
                 ).where(
-                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
-                        other=workbench_reaction_reactant_compound_smiles_strings
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
+                        other=workbench_reaction_pattern_reactant_compound_smarts_strings
                     )
                 ).distinct()
             )
 
-        if workbench_reaction_spectator_compound_smiles_strings is not None:
-            workbench_reaction_queries.append(
+        if workbench_reaction_pattern_spectator_compound_smarts_strings is not None:
+            workbench_reaction_pattern_queries.append(
                 select(
-                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                    CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id
                 ).join(
-                    target=CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound,
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern,
                     onclause=(
-                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
-                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound.workbench_reaction_id
+                        CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern.workbench_reaction_pattern_id
                     )
                 ).join(
-                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
                     onclause=(
-                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompound.workbench_compound_id ==
-                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern.workbench_compound_pattern_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
                     )
                 ).where(
-                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
-                        other=workbench_reaction_spectator_compound_smiles_strings
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
+                        other=workbench_reaction_pattern_spectator_compound_smarts_strings
                     )
                 ).distinct()
             )
 
-        if workbench_reaction_product_compound_smiles_strings is not None:
-            workbench_reaction_queries.append(
+        if workbench_reaction_pattern_product_compound_smarts_strings is not None:
+            workbench_reaction_pattern_queries.append(
                 select(
-                    CaCSSQLiteDatabaseModelWorkbenchReaction.id
+                    CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id
                 ).join(
-                    target=CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound,
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionProductCompoundPattern,
                     onclause=(
-                        CaCSSQLiteDatabaseModelWorkbenchReaction.id ==
-                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_reaction_id
+                        CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompoundPattern.workbench_reaction_pattern_id
                     )
                 ).join(
-                    target=CaCSSQLiteDatabaseModelWorkbenchCompound,
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
                     onclause=(
-                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompound.workbench_compound_id ==
-                        CaCSSQLiteDatabaseModelWorkbenchCompound.id
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompoundPattern.workbench_compound_pattern_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
                     )
                 ).where(
-                    CaCSSQLiteDatabaseModelWorkbenchCompound.smiles.in_(
-                        other=workbench_reaction_product_compound_smiles_strings
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
+                        other=workbench_reaction_pattern_product_compound_smarts_strings
                     )
                 ).distinct()
             )
 
-        if len(workbench_reaction_queries) == 0:
+        if len(workbench_reaction_pattern_queries) == 0:
             return select(
-                CaCSSQLiteDatabaseModelWorkbenchReaction
+                CaCSSQLiteDatabaseModelWorkbenchReactionPattern
             )
 
         else:
             return select(
-                CaCSSQLiteDatabaseModelWorkbenchReaction
+                CaCSSQLiteDatabaseModelWorkbenchReactionPattern
             ).where(
-                CaCSSQLiteDatabaseModelWorkbenchReaction.id.in_(
-                    intersect(
-                        *workbench_reaction_queries
+                CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id.in_(
+                    other=intersect(
+                        *workbench_reaction_pattern_queries
                     )
                 )
             )
+
+    @staticmethod
+    def construct_workbench_reaction_patterns_from_sources_query(
+            workbench_reaction_pattern_reactant_compound_smarts_strings: Optional[Iterable[str]],
+            workbench_reaction_pattern_spectator_compound_smarts_strings: Optional[Iterable[str]],
+            workbench_reaction_pattern_product_compound_smarts_strings: Optional[Iterable[str]],
+            archive_source_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[WorkbenchReactionPatternsFromSourcesTuple]:
+        """
+        Construct the workbench chemical reaction patterns query of the database.
+
+        :parameter workbench_reaction_pattern_reactant_compound_smarts_strings: The SMARTS strings of the reactant
+            compound patterns that should be present in the workbench chemical reaction patterns.
+        :parameter workbench_reaction_pattern_spectator_compound_smarts_strings: The SMARTS strings of the spectator
+            compound patterns that should be present in the workbench chemical reaction patterns.
+        :parameter workbench_reaction_pattern_product_compound_smarts_strings: The SMARTS strings of the product
+            compound patterns that should be present in the workbench chemical reaction patterns.
+        :parameter archive_source_names_versions_and_file_names: The names, versions, and file names of the archive
+            sources from which the workbench chemical reaction patterns should be retrieved.
+
+        :returns: The workbench chemical reaction patterns query of the database.
+        """
+
+        workbench_reaction_patterns_from_sources_queries = list()
+
+        if workbench_reaction_pattern_reactant_compound_smarts_strings is not None:
+            workbench_reaction_patterns_from_sources_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompoundPattern,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompoundPattern.workbench_reaction_pattern_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionReactantCompoundPattern.workbench_compound_pattern_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
+                        other=workbench_reaction_pattern_reactant_compound_smarts_strings
+                    )
+                ).distinct()
+            )
+
+        if workbench_reaction_pattern_spectator_compound_smarts_strings is not None:
+            workbench_reaction_patterns_from_sources_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern.workbench_reaction_pattern_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern.workbench_compound_pattern_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
+                        other=workbench_reaction_pattern_spectator_compound_smarts_strings
+                    )
+                ).distinct()
+            )
+
+        if workbench_reaction_pattern_product_compound_smarts_strings is not None:
+            workbench_reaction_patterns_from_sources_queries.append(
+                select(
+                    CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchReactionProductCompoundPattern,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id ==
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompoundPattern.workbench_reaction_pattern_id
+                    )
+                ).join(
+                    target=CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
+                    onclause=(
+                        CaCSSQLiteDatabaseModelWorkbenchReactionProductCompoundPattern.workbench_compound_pattern_id ==
+                        CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
+                    )
+                ).where(
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
+                        other=workbench_reaction_pattern_product_compound_smarts_strings
+                    )
+                ).distinct()
+            )
+
+        workbench_reaction_patterns_from_sources_query = select(
+            CaCSSQLiteDatabaseModelWorkbenchReactionPattern,
+            CaCSSQLiteDatabaseModelArchiveReactionPattern,
+            CaCSSQLiteDatabaseModelArchiveSource
+        ).join(
+            target=CaCSSQLiteDatabaseModelWorkbenchReactionPatternArchive,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id ==
+                CaCSSQLiteDatabaseModelWorkbenchReactionPatternArchive.workbench_reaction_pattern_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveReactionPattern,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchReactionPatternArchive.archive_reaction_pattern_id ==
+                CaCSSQLiteDatabaseModelArchiveReactionPattern.id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveReactionPatternSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReactionPattern.id ==
+                CaCSSQLiteDatabaseModelArchiveReactionPatternSource.archive_reaction_pattern_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
+        )
+
+        if len(workbench_reaction_patterns_from_sources_queries) > 0:
+            workbench_reaction_patterns_from_sources_query = workbench_reaction_patterns_from_sources_query.where(
+                CaCSSQLiteDatabaseModelWorkbenchReactionPattern.id.in_(
+                    other=intersect(
+                        *workbench_reaction_patterns_from_sources_queries
+                    )
+                )
+            )
+
+        if archive_source_names_versions_and_file_names is not None:
+            workbench_reaction_patterns_from_sources_query = workbench_reaction_patterns_from_sources_query.where(
+                tuple_(
+                    CaCSSQLiteDatabaseModelArchiveSource.name,
+                    CaCSSQLiteDatabaseModelArchiveSource.version,
+                    CaCSSQLiteDatabaseModelArchiveSource.file_name
+                ).in_(
+                    other=archive_source_names_versions_and_file_names
+                )
+            )
+
+        return workbench_reaction_patterns_from_sources_query
+
+    ####################################################################################################################
+    # Workbench Chemical Synthesis Routes
+    ####################################################################################################################
 
     @staticmethod
     def construct_reversed_synthesis_routes_of_workbench_compound_query(
@@ -534,3 +1169,6 @@ class CaCSSQLiteDatabaseSelectUtility:
             workbench_synthesis_routes_query.c.prior_reaction_id,
             workbench_synthesis_routes_query.c.reaction_product_compound_id
         )
+
+    ####################################################################################################################
+    ####################################################################################################################
