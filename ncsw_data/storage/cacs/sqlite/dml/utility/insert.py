@@ -966,7 +966,7 @@ class CaCSSQLiteDatabaseInsertUtility:
             ar_id_to_wr_smiles: Mapping[int, str],
             wr_created_by: str,
             ar_id_to_wrrc_smiles_strings: Mapping[int, Iterable[str]],
-            ar_id_to_wrsc_smiles_strings: Optional[Mapping[int, Iterable[str]]],
+            ar_id_to_wrsc_smiles_strings: Mapping[int, Iterable[str]],
             ar_id_to_wrpc_smiles_strings: Mapping[int, Iterable[str]]
     ) -> None:
         """
@@ -1004,14 +1004,13 @@ class CaCSSQLiteDatabaseInsertUtility:
             wr_smiles_to_id=wr_smiles_to_id
         )
 
-        if ar_id_to_wrsc_smiles_strings is not None:
-            CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compounds(
-                db_session=db_session,
-                ar_id_to_wrsc_smiles_strings=ar_id_to_wrsc_smiles_strings,
-                wrsc_created_by=wr_created_by,
-                ar_id_to_wr_smiles=ar_id_to_wr_smiles,
-                wr_smiles_to_id=wr_smiles_to_id
-            )
+        CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compounds(
+            db_session=db_session,
+            ar_id_to_wrsc_smiles_strings=ar_id_to_wrsc_smiles_strings,
+            wrsc_created_by=wr_created_by,
+            ar_id_to_wr_smiles=ar_id_to_wr_smiles,
+            wr_smiles_to_id=wr_smiles_to_id
+        )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_product_compounds(
             db_session=db_session,
@@ -1500,7 +1499,7 @@ class CaCSSQLiteDatabaseInsertUtility:
             arp_id_to_wrp_smarts: Mapping[int, str],
             wrp_created_by: str,
             arp_id_to_wrrcp_smarts_strings: Mapping[int, Iterable[str]],
-            arp_id_to_wrscp_smarts_strings: Optional[Mapping[int, Iterable[str]]],
+            arp_id_to_wrscp_smarts_strings: Mapping[int, Iterable[str]],
             arp_id_to_wrpcp_smarts_strings: Mapping[int, Iterable[str]]
     ) -> None:
         """
@@ -1538,14 +1537,13 @@ class CaCSSQLiteDatabaseInsertUtility:
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
-        if arp_id_to_wrscp_smarts_strings.keys() is not None:
-            CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compound_patterns(
-                db_session=db_session,
-                id_to_wrscp_smarts_strings=arp_id_to_wrscp_smarts_strings,
-                wrscp_created_by=wrp_created_by,
-                id_to_wrp_smarts=arp_id_to_wrp_smarts,
-                wrp_smarts_to_id=wrp_smarts_to_id
-            )
+        CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compound_patterns(
+            db_session=db_session,
+            id_to_wrscp_smarts_strings=arp_id_to_wrscp_smarts_strings,
+            wrscp_created_by=wrp_created_by,
+            id_to_wrp_smarts=arp_id_to_wrp_smarts,
+            wrp_smarts_to_id=wrp_smarts_to_id
+        )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_product_compound_patterns(
             db_session=db_session,
@@ -1561,7 +1559,7 @@ class CaCSSQLiteDatabaseInsertUtility:
             wr_id_to_wrp_smarts: Mapping[int, str],
             wrp_created_by: str,
             wr_id_to_wrrcp_smarts_strings: Mapping[int, Iterable[str]],
-            wr_id_to_wrscp_smarts_strings: Optional[Mapping[int, Iterable[str]]],
+            wr_id_to_wrscp_smarts_strings: Mapping[int, Iterable[str]],
             wr_id_to_wrpcp_smarts_strings: Mapping[int, Iterable[str]]
     ) -> None:
         """
@@ -1599,14 +1597,13 @@ class CaCSSQLiteDatabaseInsertUtility:
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
-        if wr_id_to_wrscp_smarts_strings.keys() is not None:
-            CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compound_patterns(
-                db_session=db_session,
-                id_to_wrscp_smarts_strings=wr_id_to_wrscp_smarts_strings,
-                wrscp_created_by=wrp_created_by,
-                id_to_wrp_smarts=wr_id_to_wrp_smarts,
-                wrp_smarts_to_id=wrp_smarts_to_id
-            )
+        CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compound_patterns(
+            db_session=db_session,
+            id_to_wrscp_smarts_strings=wr_id_to_wrscp_smarts_strings,
+            wrscp_created_by=wrp_created_by,
+            id_to_wrp_smarts=wr_id_to_wrp_smarts,
+            wrp_smarts_to_id=wrp_smarts_to_id
+        )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_product_compound_patterns(
             db_session=db_session,
