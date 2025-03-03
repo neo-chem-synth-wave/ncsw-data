@@ -1127,22 +1127,21 @@ class CaCSSQLiteDatabase(DataStorageBase):
                         for ar in ars
                     ])
 
-                    ar_id_to_wr_smiles, ar_id_to_wrrc_smiles_strings, ar_id_to_wrsc_smiles_strings, \
-                        ar_id_to_wrpc_smiles_strings = dict(), dict(), dict(), dict()
+                    wrs = list()
 
-                    # TODO: Check this because there might be an ID conflict. Also for reaction patterns.
-                    # TODO: Also check empty insertion attempts.
                     for ar_index, ar in enumerate(ars):
                         if standardized_ars[ar_index] is not None:
-                            for standardized_ar in standardized_ars[ar_index]:
-                                (
-                                    ar_id_to_wr_smiles[ar.id],
-                                    ar_id_to_wrrc_smiles_strings[ar.id],
-                                    ar_id_to_wrsc_smiles_strings[ar.id],
-                                    ar_id_to_wrpc_smiles_strings[ar.id],
-                                ) = standardized_ar
+                            for wr_smiles, wrrc_smiles_strings, wrsc_smiles_strings, \
+                                    wrpc_smiles_strings in standardized_ars[ar_index]:
+                                wrs.append((
+                                    ar.id,
+                                    wr_smiles,
+                                    wrrc_smiles_strings,
+                                    wrsc_smiles_strings,
+                                    wrpc_smiles_strings,
+                                ))
 
-                    if len(ar_id_to_wr_smiles.keys()) == 0:
+                    if len(wrs) == 0:
                         if self.logger is not None:
                             self.logger.warning(
                                 msg=(
@@ -1162,10 +1161,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
                     with db_session.begin_nested():
                         CaCSSQLiteDatabaseInsertUtility.insert_workbench_reactions(
                             db_session=db_session,
-                            ar_id_to_wr_smiles=ar_id_to_wr_smiles,
-                            ar_id_to_wrrc_smiles_strings=ar_id_to_wrrc_smiles_strings,
-                            ar_id_to_wrsc_smiles_strings=ar_id_to_wrsc_smiles_strings,
-                            ar_id_to_wrpc_smiles_strings=ar_id_to_wrpc_smiles_strings,
+                            wrs=wrs,
                             wr_created_by=db_user
                         )
 
@@ -1258,7 +1254,6 @@ class CaCSSQLiteDatabase(DataStorageBase):
         """
 
         try:
-            # TODO: Merge the select methods into one.
             with self.__db_sessionmaker() as db_session:
                 wr_from_source_select_statement = \
                     CaCSSQLiteDatabaseSelectUtility.construct_workbench_reaction_from_source_select_statement(
@@ -1580,20 +1575,21 @@ class CaCSSQLiteDatabase(DataStorageBase):
                         for arp in arps
                     ])
 
-                    arp_id_to_wrp_smarts, arp_id_to_wrrcp_smarts_strings, arp_id_to_wrscp_smarts_strings, \
-                        arp_id_to_wrpcp_smarts_strings = dict(), dict(), dict(), dict()
+                    wrps = list()
 
                     for arp_index, arp in enumerate(arps):
                         if standardized_arps[arp_index] is not None:
-                            for standardized_arp in standardized_arps[arp_index]:
-                                (
-                                    arp_id_to_wrp_smarts[arp.id],
-                                    arp_id_to_wrrcp_smarts_strings[arp.id],
-                                    arp_id_to_wrscp_smarts_strings[arp.id],
-                                    arp_id_to_wrpcp_smarts_strings[arp.id],
-                                ) = standardized_arp
+                            for wrp_smarts, wrrcp_smarts_strings, wrscp_smarts_strings, \
+                                    wrpcp_smarts_strings in standardized_arps[arp_index]:
+                                wrps.append((
+                                    arp.id,
+                                    wrp_smarts,
+                                    wrrcp_smarts_strings,
+                                    wrscp_smarts_strings,
+                                    wrpcp_smarts_strings,
+                                ))
 
-                    if len(arp_id_to_wrp_smarts.keys()) == 0:
+                    if len(wrps) == 0:
                         if self.logger is not None:
                             self.logger.warning(
                                 msg=(
@@ -1613,10 +1609,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
                     with db_session.begin_nested():
                         CaCSSQLiteDatabaseInsertUtility.insert_workbench_reaction_patterns(
                             db_session=db_session,
-                            arp_id_to_wrp_smarts=arp_id_to_wrp_smarts,
-                            arp_id_to_wrrcp_smarts_strings=arp_id_to_wrrcp_smarts_strings,
-                            arp_id_to_wrscp_smarts_strings=arp_id_to_wrscp_smarts_strings,
-                            arp_id_to_wrpcp_smarts_strings=arp_id_to_wrpcp_smarts_strings,
+                            wrps=wrps,
                             wrp_created_by=db_user
                         )
 
@@ -1710,20 +1703,21 @@ class CaCSSQLiteDatabase(DataStorageBase):
                         for wr in wrs
                     ])
 
-                    wr_id_to_wrp_smarts, wr_id_to_wrrcp_smarts_strings, wr_id_to_wrscp_smarts_strings, \
-                        wr_id_to_wrpcp_smarts_strings = dict(), dict(), dict(), dict()
+                    wrtps = list()
 
                     for wr_index, wr in enumerate(wrs):
                         if extracted_wrps[wr_index] is not None:
-                            for extracted_wrp in extracted_wrps[wr_index]:
-                                (
-                                    wr_id_to_wrp_smarts[wr.id],
-                                    wr_id_to_wrrcp_smarts_strings[wr.id],
-                                    wr_id_to_wrscp_smarts_strings[wr.id],
-                                    wr_id_to_wrpcp_smarts_strings[wr.id],
-                                ) = extracted_wrp
+                            for wrp_smarts, wrrcp_smarts_strings, wrscp_smarts_strings, \
+                                    wrpcp_smarts_strings in extracted_wrps[wr_index]:
+                                wrtps.append((
+                                    wr.id,
+                                    wrp_smarts,
+                                    wrrcp_smarts_strings,
+                                    wrscp_smarts_strings,
+                                    wrpcp_smarts_strings,
+                                ))
 
-                    if len(wr_id_to_wrp_smarts.keys()) == 0:
+                    if len(wrtps) == 0:
                         if self.logger is not None:
                             self.logger.warning(
                                 msg=(
@@ -1744,10 +1738,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
                     with db_session.begin_nested():
                         CaCSSQLiteDatabaseInsertUtility.insert_workbench_reaction_transformation_patterns(
                             db_session=db_session,
-                            wr_id_to_wrp_smarts=wr_id_to_wrp_smarts,
-                            wr_id_to_wrrcp_smarts_strings=wr_id_to_wrrcp_smarts_strings,
-                            wr_id_to_wrscp_smarts_strings=wr_id_to_wrscp_smarts_strings,
-                            wr_id_to_wrpcp_smarts_strings=wr_id_to_wrpcp_smarts_strings,
+                            wrtps=wrtps,
                             wrp_created_by=db_user
                         )
 

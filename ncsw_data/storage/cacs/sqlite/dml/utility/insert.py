@@ -1,7 +1,6 @@
 """ The ``ncsw_data.storage.cacs.sqlite.dml.utility`` package ``insert`` module. """
 
-from itertools import chain
-from typing import Dict, Iterable, List, Mapping, Optional
+from typing import Dict, Iterable, List, Mapping, Optional, Tuple
 
 from sqlalchemy.dialects.sqlite.dml import insert
 from sqlalchemy.orm.session import Session
@@ -766,21 +765,21 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_archives(
             db_session: Session,
-            ar_id_to_wr_smiles: Mapping[int, str],
+            ar_ids_and_wr_smiles_strings: Iterable[Tuple[int, str]],
             wr_smiles_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction archives into the database.
 
         :parameter db_session: The session of the database.
-        :parameter ar_id_to_wr_smiles: The archive chemical reaction ID to workbench chemical reaction SMILES string
-            mapping.
+        :parameter ar_ids_and_wr_smiles_strings: The archive chemical reaction IDs and workbench chemical reaction
+            SMILES strings.
         :parameter wr_smiles_to_id: The workbench chemical reaction SMILES string to ID mapping.
         """
 
         wras = list()
 
-        for ar_id, wr_smiles in ar_id_to_wr_smiles.items():
+        for ar_id, wr_smiles in ar_ids_and_wr_smiles_strings:
             wras.append({
                 "workbench_reaction_id": wr_smiles_to_id[wr_smiles],
                 "archive_reaction_id": ar_id,
@@ -801,40 +800,39 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_reactant_compounds(
             db_session: Session,
-            ar_id_to_wrrc_smiles_strings: Mapping[int, Iterable[str]],
+            wr_smiles_and_rc_smiles_strings: Iterable[Tuple[str, Iterable[str]]],
             wrrc_created_by: str,
-            ar_id_to_wr_smiles: Mapping[int, str],
             wr_smiles_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction reactant compounds into the database.
 
         :parameter db_session: The session of the database.
-        :parameter ar_id_to_wrrc_smiles_strings: The archive chemical reaction ID to workbench chemical reaction
-            reactant compound SMILES strings mapping.
+        :parameter wr_smiles_and_rc_smiles_strings: The workbench chemical reaction SMILES strings and reactant compound
+            SMILES strings.
         :parameter wrrc_created_by: The user of the database inserting the workbench chemical reaction reactant
             compounds.
-        :parameter ar_id_to_wr_smiles: The archive chemical reaction ID to workbench chemical reaction SMILES string
-            mapping.
         :parameter wr_smiles_to_id: The workbench chemical reaction SMILES string to ID mapping.
         """
 
-        wrrc_index_to_smiles = dict()
+        id_to_wrrc_smiles, id_ = dict(), 0
 
-        for wrrc_index, wrrc_smiles in enumerate(chain.from_iterable(ar_id_to_wrrc_smiles_strings.values())):
-            wrrc_index_to_smiles[wrrc_index] = wrrc_smiles
+        for _, wrrc_smiles_strings in wr_smiles_and_rc_smiles_strings:
+            for wrrc_smiles in wrrc_smiles_strings:
+                id_to_wrrc_smiles[id_] = wrrc_smiles
+                id_ += 1
 
         wrrc_smiles_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_compounds(
             db_session=db_session,
-            id_to_wc_smiles=wrrc_index_to_smiles,
+            id_to_wc_smiles=id_to_wrrc_smiles,
             id_to_wc_is_building_block=None,
             wc_created_by=wrrc_created_by
         )
 
         wrrcs = list()
 
-        for ar_id, wr_smiles in ar_id_to_wr_smiles.items():
-            for wrrc_smiles in ar_id_to_wrrc_smiles_strings[ar_id]:
+        for wr_smiles, wrrc_smiles_strings in wr_smiles_and_rc_smiles_strings:
+            for wrrc_smiles in wrrc_smiles_strings:
                 wrrcs.append({
                     "workbench_reaction_id": wr_smiles_to_id[wr_smiles],
                     "workbench_compound_id": wrrc_smiles_to_id[wrrc_smiles],
@@ -855,40 +853,39 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_spectator_compounds(
             db_session: Session,
-            ar_id_to_wrsc_smiles_strings: Mapping[int, Iterable[str]],
+            wr_smiles_and_sc_smiles_strings: Iterable[Tuple[str, Iterable[str]]],
             wrsc_created_by: str,
-            ar_id_to_wr_smiles: Mapping[int, str],
             wr_smiles_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction spectator compounds into the database.
 
         :parameter db_session: The session of the database.
-        :parameter ar_id_to_wrsc_smiles_strings: The archive chemical reaction ID to workbench chemical reaction
-            spectator compound SMILES strings mapping.
+        :parameter wr_smiles_and_sc_smiles_strings: The workbench chemical reaction SMILES strings and spectator
+            compound SMILES strings.
         :parameter wrsc_created_by: The user of the database inserting the workbench chemical reaction spectator
             compounds.
-        :parameter ar_id_to_wr_smiles: The archive chemical reaction ID to workbench chemical reaction SMILES string
-            mapping.
         :parameter wr_smiles_to_id: The workbench chemical reaction SMILES string to ID mapping.
         """
 
-        wrsc_index_to_smiles = dict()
+        id_to_wrsc_smiles, id_ = dict(), 0
 
-        for wrsc_index, wrsc_smiles in enumerate(chain.from_iterable(ar_id_to_wrsc_smiles_strings.values())):
-            wrsc_index_to_smiles[wrsc_index] = wrsc_smiles
+        for _, wrsc_smiles_strings in wr_smiles_and_sc_smiles_strings:
+            for wrsc_smiles in wrsc_smiles_strings:
+                id_to_wrsc_smiles[id_] = wrsc_smiles
+                id_ += 1
 
         wrsc_smiles_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_compounds(
             db_session=db_session,
-            id_to_wc_smiles=wrsc_index_to_smiles,
+            id_to_wc_smiles=id_to_wrsc_smiles,
             id_to_wc_is_building_block=None,
             wc_created_by=wrsc_created_by
         )
 
         wrscs = list()
 
-        for ar_id, wr_smiles in ar_id_to_wr_smiles.items():
-            for wrsc_smiles in ar_id_to_wrsc_smiles_strings[ar_id]:
+        for wr_smiles, wrsc_smiles_strings in wr_smiles_and_sc_smiles_strings:
+            for wrsc_smiles in wrsc_smiles_strings:
                 wrscs.append({
                     "workbench_reaction_id": wr_smiles_to_id[wr_smiles],
                     "workbench_compound_id": wrsc_smiles_to_id[wrsc_smiles],
@@ -909,40 +906,39 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_product_compounds(
             db_session: Session,
-            ar_id_to_wrpc_smiles_strings: Mapping[int, Iterable[str]],
+            wr_smiles_and_pc_smiles_strings: Iterable[Tuple[str, Iterable[str]]],
             wrpc_created_by: str,
-            ar_id_to_wr_smiles: Mapping[int, str],
             wr_smiles_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction product compounds into the database.
 
         :parameter db_session: The session of the database.
-        :parameter ar_id_to_wrpc_smiles_strings: The archive chemical reaction ID to workbench chemical reaction product
-            compound SMILES strings mapping.
+        :parameter wr_smiles_and_pc_smiles_strings: The workbench chemical reaction SMILES strings and product compound
+            SMILES strings.
         :parameter wrpc_created_by: The user of the database inserting the workbench chemical reaction product
             compounds.
-        :parameter ar_id_to_wr_smiles: The archive chemical reaction ID to workbench chemical reaction SMILES string
-            mapping.
         :parameter wr_smiles_to_id: The workbench chemical reaction SMILES string to ID mapping.
         """
 
-        wrpc_index_to_smiles = dict()
+        id_to_wrpc_smiles, id_ = dict(), 0
 
-        for wrpc_index, wrpc_smiles in enumerate(chain.from_iterable(ar_id_to_wrpc_smiles_strings.values())):
-            wrpc_index_to_smiles[wrpc_index] = wrpc_smiles
+        for _, wrpc_smiles_strings in wr_smiles_and_pc_smiles_strings:
+            for wrpc_smiles in wrpc_smiles_strings:
+                id_to_wrpc_smiles[id_] = wrpc_smiles
+                id_ += 1
 
         wrpc_smiles_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_compounds(
             db_session=db_session,
-            id_to_wc_smiles=wrpc_index_to_smiles,
+            id_to_wc_smiles=id_to_wrpc_smiles,
             id_to_wc_is_building_block=None,
             wc_created_by=wrpc_created_by
         )
 
         wrpcs = list()
 
-        for ar_id, wr_smiles in ar_id_to_wr_smiles.items():
-            for wrpc_smiles in ar_id_to_wrpc_smiles_strings[ar_id]:
+        for wr_smiles, wrpc_smiles_strings in wr_smiles_and_pc_smiles_strings:
+            for wrpc_smiles in wrpc_smiles_strings:
                 wrpcs.append({
                     "workbench_reaction_id": wr_smiles_to_id[wr_smiles],
                     "workbench_compound_id": wrpc_smiles_to_id[wrpc_smiles],
@@ -963,60 +959,62 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def insert_workbench_reactions(
             db_session: Session,
-            ar_id_to_wr_smiles: Mapping[int, str],
-            wr_created_by: str,
-            ar_id_to_wrrc_smiles_strings: Mapping[int, Iterable[str]],
-            ar_id_to_wrsc_smiles_strings: Mapping[int, Iterable[str]],
-            ar_id_to_wrpc_smiles_strings: Mapping[int, Iterable[str]]
+            wrs: Iterable[Tuple[int, str, Iterable[str], Iterable[str], Iterable[str]]],
+            wr_created_by: str
     ) -> None:
         """
         Insert the workbench chemical reactions into the database.
 
         :parameter db_session: The session of the database.
-        :parameter ar_id_to_wr_smiles: The archive chemical reaction ID to workbench chemical reaction SMILES string
-            mapping.
+        :parameter wrs: The workbench chemical reactions.
         :parameter wr_created_by: The user of the database inserting the workbench chemical reactions.
-        :parameter ar_id_to_wrrc_smiles_strings: The archive chemical reaction ID to workbench chemical reaction
-            reactant compound SMILES strings mapping.
-        :parameter ar_id_to_wrsc_smiles_strings: The archive chemical reaction ID to workbench chemical reaction
-            spectator compound SMILES strings mapping.
-        :parameter ar_id_to_wrpc_smiles_strings: The archive chemical reaction ID to workbench chemical reaction product
-            compound SMILES strings mapping.
         """
 
         wr_smiles_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_reactions(
             db_session=db_session,
-            wr_smiles_strings=ar_id_to_wr_smiles.values(),
+            wr_smiles_strings=[
+                wr_smiles
+                for _, wr_smiles, _, _, _ in wrs
+            ],
             wr_created_by=wr_created_by
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_archives(
             db_session=db_session,
-            ar_id_to_wr_smiles=ar_id_to_wr_smiles,
+            ar_ids_and_wr_smiles_strings=[(
+                ar_id,
+                wr_smiles,
+            ) for ar_id, wr_smiles, _, _, _ in wrs],
             wr_smiles_to_id=wr_smiles_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_reactant_compounds(
             db_session=db_session,
-            ar_id_to_wrrc_smiles_strings=ar_id_to_wrrc_smiles_strings,
+            wr_smiles_and_rc_smiles_strings=[(
+                wr_smiles,
+                wrrc_smiles_strings,
+            ) for _, wr_smiles, wrrc_smiles_strings, _, _ in wrs],
             wrrc_created_by=wr_created_by,
-            ar_id_to_wr_smiles=ar_id_to_wr_smiles,
             wr_smiles_to_id=wr_smiles_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compounds(
             db_session=db_session,
-            ar_id_to_wrsc_smiles_strings=ar_id_to_wrsc_smiles_strings,
+            wr_smiles_and_sc_smiles_strings=[(
+                wr_smiles,
+                wrsc_smiles_strings,
+            ) for _, wr_smiles, _, wrsc_smiles_strings, _ in wrs],
             wrsc_created_by=wr_created_by,
-            ar_id_to_wr_smiles=ar_id_to_wr_smiles,
             wr_smiles_to_id=wr_smiles_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_product_compounds(
             db_session=db_session,
-            ar_id_to_wrpc_smiles_strings=ar_id_to_wrpc_smiles_strings,
+            wr_smiles_and_pc_smiles_strings=[(
+                wr_smiles,
+                wrpc_smiles_strings,
+            ) for _, wr_smiles, _, _, wrpc_smiles_strings in wrs],
             wrpc_created_by=wr_created_by,
-            ar_id_to_wr_smiles=ar_id_to_wr_smiles,
             wr_smiles_to_id=wr_smiles_to_id
         )
 
@@ -1264,21 +1262,21 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_pattern_archives(
             db_session: Session,
-            arp_id_to_wrp_smarts: Mapping[int, str],
+            arp_id_and_wrp_smarts: Iterable[Tuple[int, str]],
             wrp_smarts_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction pattern archives into the database.
 
         :parameter db_session: The session of the database.
-        :parameter arp_id_to_wrp_smarts: The archive chemical reaction pattern ID to workbench chemical reaction pattern
-            SMARTS string mapping.
+        :parameter arp_id_and_wrp_smarts: The archive chemical reaction pattern ID and workbench chemical reaction
+        pattern SMARTS strings.
         :parameter wrp_smarts_to_id: The workbench chemical reaction pattern SMARTS string to ID mapping.
         """
 
         wrpas = list()
 
-        for arp_id, wrp_smarts in arp_id_to_wrp_smarts.items():
+        for arp_id, wrp_smarts in arp_id_and_wrp_smarts:
             wrpas.append({
                 "workbench_reaction_pattern_id": wrp_smarts_to_id[wrp_smarts],
                 "archive_reaction_pattern_id": arp_id,
@@ -1299,21 +1297,21 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_transformation_patterns(
             db_session: Session,
-            wr_id_to_wrp_smarts: Mapping[int, str],
+            wr_id_and_wrp_smarts: Iterable[Tuple[int, str]],
             wrp_smarts_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction transformation patterns into the database.
 
         :parameter db_session: The session of the database.
-        :parameter wr_id_to_wrp_smarts: The workbench chemical reaction ID to workbench chemical reaction pattern SMARTS
-            string mapping.
+        :parameter wr_id_and_wrp_smarts: The workbench chemical reaction ID and workbench chemical reaction pattern
+            SMARTS string.
         :parameter wrp_smarts_to_id: The workbench chemical reaction pattern SMARTS string to ID mapping.
         """
 
         wrtps = list()
 
-        for wr_id, wrp_smarts in wr_id_to_wrp_smarts.items():
+        for wr_id, wrp_smarts in wr_id_and_wrp_smarts:
             wrtps.append({
                 "workbench_reaction_id": wr_id,
                 "workbench_reaction_pattern_id": wrp_smarts_to_id[wrp_smarts],
@@ -1334,40 +1332,39 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_reactant_compound_patterns(
             db_session: Session,
-            id_to_wrrcp_smarts_strings: Mapping[int, Iterable[str]],
+            wrp_smarts_and_wrrcp_smarts_strings: Iterable[Tuple[str, Iterable[str]]],
             wrrcp_created_by: str,
-            id_to_wrp_smarts: Mapping[int, str],
             wrp_smarts_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction reactant compound patterns into the database.
 
         :parameter db_session: The session of the database.
-        :parameter id_to_wrrcp_smarts_strings: The ID to workbench chemical reaction reactant compound pattern SMARTS
-            strings mapping.
+        :parameter wrp_smarts_and_wrrcp_smarts_strings: The workbench chemical reaction pattern SMARTS strings and
+            reactant compound pattern SMARTS strings.
         :parameter wrrcp_created_by: The user of the database inserting the workbench chemical reaction reactant
             compound patterns.
-        :parameter id_to_wrp_smarts: The ID to workbench chemical reaction pattern SMARTS string mapping.
         :parameter wrp_smarts_to_id: The workbench chemical reaction pattern SMARTS string to ID mapping.
         """
 
-        wrrcp_smarts_strings = list()
+        wrrcp_smarts_strings_ = list()
 
-        for wrrcp_smarts in chain.from_iterable(id_to_wrrcp_smarts_strings.values()):
-            wrrcp_smarts_strings.append(
-                wrrcp_smarts
-            )
+        for _, wrrcp_smarts_strings in wrp_smarts_and_wrrcp_smarts_strings:
+            for wrrcp_smarts in wrrcp_smarts_strings:
+                wrrcp_smarts_strings_.append(
+                    wrrcp_smarts
+                )
 
         wrrcp_smarts_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_compound_patterns(
             db_session=db_session,
-            wcp_smarts_strings=wrrcp_smarts_strings,
+            wcp_smarts_strings=wrrcp_smarts_strings_,
             wcp_created_by=wrrcp_created_by
         )
 
         wrrcps = list()
 
-        for id_, wrp_smarts in id_to_wrp_smarts.items():
-            for wrrcp_smarts in id_to_wrrcp_smarts_strings[id_]:
+        for wrp_smarts, wrrcp_smarts_strings in wrp_smarts_and_wrrcp_smarts_strings:
+            for wrrcp_smarts in wrrcp_smarts_strings:
                 wrrcps.append({
                     "workbench_reaction_pattern_id": wrp_smarts_to_id[wrp_smarts],
                     "workbench_compound_pattern_id": wrrcp_smarts_to_id[wrrcp_smarts],
@@ -1388,40 +1385,39 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_spectator_compound_patterns(
             db_session: Session,
-            id_to_wrscp_smarts_strings: Mapping[int, Iterable[str]],
+            wrp_smarts_and_wrscp_smarts_strings: Iterable[Tuple[str, Iterable[str]]],
             wrscp_created_by: str,
-            id_to_wrp_smarts: Mapping[int, str],
             wrp_smarts_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction spectator compound patterns into the database.
 
         :parameter db_session: The session of the database.
-        :parameter id_to_wrscp_smarts_strings: The ID to workbench chemical reaction spectator compound pattern SMARTS
-            strings mapping.
+        :parameter wrp_smarts_and_wrscp_smarts_strings: The workbench chemical reaction pattern SMARTS strings and
+            spectator compound pattern SMARTS strings.
         :parameter wrscp_created_by: The user of the database inserting the workbench chemical reaction spectator
             compound patterns.
-        :parameter id_to_wrp_smarts: The ID to workbench chemical reaction pattern SMARTS string mapping.
         :parameter wrp_smarts_to_id: The workbench chemical reaction pattern SMARTS string to ID mapping.
         """
 
-        wrscp_smarts_strings = list()
+        wrscp_smarts_strings_ = list()
 
-        for wrscp_smarts in chain.from_iterable(id_to_wrscp_smarts_strings.values()):
-            wrscp_smarts_strings.append(
-                wrscp_smarts
-            )
+        for _, wrscp_smarts_strings in wrp_smarts_and_wrscp_smarts_strings:
+            for wrscp_smarts in wrscp_smarts_strings:
+                wrscp_smarts_strings_.append(
+                    wrscp_smarts
+                )
 
         wrscp_smarts_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_compound_patterns(
             db_session=db_session,
-            wcp_smarts_strings=wrscp_smarts_strings,
+            wcp_smarts_strings=wrscp_smarts_strings_,
             wcp_created_by=wrscp_created_by
         )
 
         wrscps = list()
 
-        for id_, wrp_smarts in id_to_wrp_smarts.items():
-            for wrscp_smarts in id_to_wrscp_smarts_strings[id_]:
+        for wrp_smarts, wrscp_smarts_strings in wrp_smarts_and_wrscp_smarts_strings:
+            for wrscp_smarts in wrscp_smarts_strings:
                 wrscps.append({
                     "workbench_reaction_pattern_id": wrp_smarts_to_id[wrp_smarts],
                     "workbench_compound_pattern_id": wrscp_smarts_to_id[wrscp_smarts],
@@ -1442,40 +1438,39 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def _insert_workbench_reaction_product_compound_patterns(
             db_session: Session,
-            id_to_wrpcp_smarts_strings: Mapping[int, Iterable[str]],
+            wrp_smarts_and_wrpcp_smarts_strings: Iterable[Tuple[str, Iterable[str]]],
             wrpcp_created_by: str,
-            id_to_wrp_smarts: Mapping[int, str],
             wrp_smarts_to_id: Mapping[str, int]
     ) -> None:
         """
         Insert the workbench chemical reaction product compound patterns into the database.
 
         :parameter db_session: The session of the database.
-        :parameter id_to_wrpcp_smarts_strings: The ID to workbench chemical reaction product compound pattern SMARTS
-            strings mapping.
+        :parameter wrp_smarts_and_wrpcp_smarts_strings: The workbench chemical reaction pattern SMARTS strings and
+            product compound pattern SMARTS strings.
         :parameter wrpcp_created_by: The user of the database inserting the workbench chemical reaction product compound
             patterns.
-        :parameter id_to_wrp_smarts: The ID to workbench chemical reaction pattern SMARTS string mapping.
         :parameter wrp_smarts_to_id: The workbench chemical reaction pattern SMARTS string to ID mapping.
         """
 
-        wrpcp_smarts_strings = list()
+        wrpcp_smarts_strings_ = list()
 
-        for wrpcp_smarts in chain.from_iterable(id_to_wrpcp_smarts_strings.values()):
-            wrpcp_smarts_strings.append(
-                wrpcp_smarts
-            )
+        for _, wrpcp_smarts_strings in wrp_smarts_and_wrpcp_smarts_strings:
+            for wrpcp_smarts in wrpcp_smarts_strings:
+                wrpcp_smarts_strings_.append(
+                    wrpcp_smarts
+                )
 
         wrpcp_smarts_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_compound_patterns(
             db_session=db_session,
-            wcp_smarts_strings=wrpcp_smarts_strings,
+            wcp_smarts_strings=wrpcp_smarts_strings_,
             wcp_created_by=wrpcp_created_by
         )
 
         wrpcps = list()
 
-        for id_, wrp_smarts in id_to_wrp_smarts.items():
-            for wrpcp_smarts in id_to_wrpcp_smarts_strings[id_]:
+        for wrp_smarts, wrpcp_smarts_strings in wrp_smarts_and_wrpcp_smarts_strings:
+            for wrpcp_smarts in wrpcp_smarts_strings:
                 wrpcps.append({
                     "workbench_reaction_pattern_id": wrp_smarts_to_id[wrp_smarts],
                     "workbench_compound_pattern_id": wrpcp_smarts_to_id[wrpcp_smarts],
@@ -1496,120 +1491,124 @@ class CaCSSQLiteDatabaseInsertUtility:
     @staticmethod
     def insert_workbench_reaction_patterns(
             db_session: Session,
-            arp_id_to_wrp_smarts: Mapping[int, str],
-            wrp_created_by: str,
-            arp_id_to_wrrcp_smarts_strings: Mapping[int, Iterable[str]],
-            arp_id_to_wrscp_smarts_strings: Mapping[int, Iterable[str]],
-            arp_id_to_wrpcp_smarts_strings: Mapping[int, Iterable[str]]
+            wrps: Iterable[Tuple[int, str, Iterable[str], Iterable[str], Iterable[str]]],
+            wrp_created_by: str
     ) -> None:
         """
         Insert the workbench chemical reaction patterns into the database.
 
         :parameter db_session: The session of the database.
-        :parameter arp_id_to_wrp_smarts: The archive chemical reaction pattern ID to workbench chemical reaction pattern
-            SMARTS string mapping.
+        :parameter wrps: The workbench chemical reaction patterns.
         :parameter wrp_created_by: The user of the database inserting the workbench chemical reaction patterns.
-        :parameter arp_id_to_wrrcp_smarts_strings: The archive chemical reaction pattern ID to workbench chemical
-            reaction reactant compound pattern SMARTS strings mapping.
-        :parameter arp_id_to_wrscp_smarts_strings: The archive chemical reaction pattern ID to workbench chemical
-            reaction spectator compound pattern SMARTS strings mapping.
-        :parameter arp_id_to_wrpcp_smarts_strings: The archive chemical reaction pattern ID to workbench chemical
-            reaction product compound pattern SMARTS strings mapping.
         """
 
         wrp_smarts_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_reaction_patterns(
             db_session=db_session,
-            wrp_smarts_strings=arp_id_to_wrp_smarts.values(),
+            wrp_smarts_strings=[
+                wrp_smarts
+                for _, wrp_smarts, _, _, _ in wrps
+            ],
             wrp_created_by=wrp_created_by
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_pattern_archives(
             db_session=db_session,
-            arp_id_to_wrp_smarts=arp_id_to_wrp_smarts,
+            arp_id_and_wrp_smarts=[(
+                arp_id,
+                wrp_smarts,
+            ) for arp_id, wrp_smarts, _, _, _ in wrps],
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_reactant_compound_patterns(
             db_session=db_session,
-            id_to_wrrcp_smarts_strings=arp_id_to_wrrcp_smarts_strings,
+            wrp_smarts_and_wrrcp_smarts_strings=[(
+                wrp_smarts,
+                wrrcp_smarts_strings,
+            ) for _, wrp_smarts, wrrcp_smarts_strings, _, _ in wrps],
             wrrcp_created_by=wrp_created_by,
-            id_to_wrp_smarts=arp_id_to_wrp_smarts,
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compound_patterns(
             db_session=db_session,
-            id_to_wrscp_smarts_strings=arp_id_to_wrscp_smarts_strings,
+            wrp_smarts_and_wrscp_smarts_strings=[(
+                wrp_smarts,
+                wrscp_smarts_strings,
+            ) for _, wrp_smarts, _, wrscp_smarts_strings, _ in wrps],
             wrscp_created_by=wrp_created_by,
-            id_to_wrp_smarts=arp_id_to_wrp_smarts,
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_product_compound_patterns(
             db_session=db_session,
-            id_to_wrpcp_smarts_strings=arp_id_to_wrpcp_smarts_strings,
+            wrp_smarts_and_wrpcp_smarts_strings=[(
+                wrp_smarts,
+                wrpcp_smarts_strings,
+            ) for _, wrp_smarts, _, _, wrpcp_smarts_strings in wrps],
             wrpcp_created_by=wrp_created_by,
-            id_to_wrp_smarts=arp_id_to_wrp_smarts,
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
     @staticmethod
     def insert_workbench_reaction_transformation_patterns(
             db_session: Session,
-            wr_id_to_wrp_smarts: Mapping[int, str],
-            wrp_created_by: str,
-            wr_id_to_wrrcp_smarts_strings: Mapping[int, Iterable[str]],
-            wr_id_to_wrscp_smarts_strings: Mapping[int, Iterable[str]],
-            wr_id_to_wrpcp_smarts_strings: Mapping[int, Iterable[str]]
+            wrtps: Iterable[Tuple[int, str, Iterable[str], Iterable[str], Iterable[str]]],
+            wrp_created_by: str
     ) -> None:
         """
         Insert the workbench chemical reaction transformation patterns into the database.
 
         :parameter db_session: The session of the database.
-        :parameter wr_id_to_wrp_smarts: The workbench chemical reaction pattern ID to workbench chemical reaction
-            pattern SMARTS string mapping.
+        :parameter wrtps: The workbench chemical reaction transformation patterns.
         :parameter wrp_created_by: The user of the database inserting the workbench chemical reaction patterns.
-        :parameter wr_id_to_wrrcp_smarts_strings: The workbench chemical reaction ID to workbench chemical reaction
-            reactant compound pattern SMARTS strings mapping.
-        :parameter wr_id_to_wrscp_smarts_strings: The workbench chemical reaction ID to workbench chemical reaction
-            spectator compound pattern SMARTS strings mapping.
-        :parameter wr_id_to_wrpcp_smarts_strings: The workbench chemical reaction ID to workbench chemical reaction
-            product compound pattern SMARTS strings mapping.
         """
 
         wrp_smarts_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_reaction_patterns(
             db_session=db_session,
-            wrp_smarts_strings=wr_id_to_wrp_smarts.values(),
+            wrp_smarts_strings=[
+                wrp_smarts
+                for _, wrp_smarts, _, _, _ in wrtps
+            ],
             wrp_created_by=wrp_created_by
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_transformation_patterns(
             db_session=db_session,
-            wr_id_to_wrp_smarts=wr_id_to_wrp_smarts,
+            wr_id_and_wrp_smarts=[(
+                wr_id,
+                wrp_smarts,
+            ) for wr_id, wrp_smarts, _, _, _ in wrtps],
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_reactant_compound_patterns(
             db_session=db_session,
-            id_to_wrrcp_smarts_strings=wr_id_to_wrrcp_smarts_strings,
+            wrp_smarts_and_wrrcp_smarts_strings=[(
+                wrp_smarts,
+                wrrcp_smarts_strings,
+            ) for _, wrp_smarts, wrrcp_smarts_strings, _, _ in wrtps],
             wrrcp_created_by=wrp_created_by,
-            id_to_wrp_smarts=wr_id_to_wrp_smarts,
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_spectator_compound_patterns(
             db_session=db_session,
-            id_to_wrscp_smarts_strings=wr_id_to_wrscp_smarts_strings,
+            wrp_smarts_and_wrscp_smarts_strings=[(
+                wrp_smarts,
+                wrscp_smarts_strings,
+            ) for _, wrp_smarts, _, wrscp_smarts_strings, _ in wrtps],
             wrscp_created_by=wrp_created_by,
-            id_to_wrp_smarts=wr_id_to_wrp_smarts,
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 
         CaCSSQLiteDatabaseInsertUtility._insert_workbench_reaction_product_compound_patterns(
             db_session=db_session,
-            id_to_wrpcp_smarts_strings=wr_id_to_wrpcp_smarts_strings,
+            wrp_smarts_and_wrpcp_smarts_strings=[(
+                wrp_smarts,
+                wrpcp_smarts_strings,
+            ) for _, wrp_smarts, _, _, wrpcp_smarts_strings in wrtps],
             wrpcp_created_by=wrp_created_by,
-            id_to_wrp_smarts=wr_id_to_wrp_smarts,
             wrp_smarts_to_id=wrp_smarts_to_id
         )
 

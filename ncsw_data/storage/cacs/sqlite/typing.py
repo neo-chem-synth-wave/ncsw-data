@@ -1,6 +1,7 @@
 """ The ``ncsw_data.storage.cacs.sqlite`` package ``typing`` module. """
 
-from typing import Callable, Optional, Sequence, Tuple
+from typing import Callable, Iterable, Optional, Sequence, Tuple
+
 
 CaCSSQLiteDatabaseArchiveCompoundStandardizationCallable = Callable[
     [Sequence[str]],
@@ -12,7 +13,7 @@ CaCSSQLiteDatabaseArchiveCompoundPatternStandardizationCallable = \
 
 CaCSSQLiteDatabaseArchiveReactionStandardizationCallable = Callable[
     [Sequence[str]],
-    Sequence[Optional[Sequence[Tuple[str, Sequence[str], Sequence[str], Sequence[str]]]]]
+    Sequence[Optional[Iterable[Tuple[str, Iterable[str], Iterable[str], Iterable[str]]]]]
 ]
 
 CaCSSQLiteDatabaseArchiveReactionPatternStandardizationCallable = \

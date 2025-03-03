@@ -5,6 +5,7 @@ from typing import Optional, Tuple
 from ncsw_data.storage.cacs.sqlite.model.archive import *
 from ncsw_data.storage.cacs.sqlite.model.workbench import *
 
+
 CaCSSQLiteDatabaseArchiveCompoundTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveCompound
 ]
