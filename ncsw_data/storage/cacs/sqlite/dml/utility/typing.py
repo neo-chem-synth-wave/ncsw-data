@@ -1,83 +1,84 @@
-""" The ``ncsw_data.storage.cacs.sqlite.utility`` package ``typing`` module. """
+""" The ``ncsw_data.storage.cacs.sqlite.dml.utility`` package ``typing`` module. """
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 from ncsw_data.storage.cacs.sqlite.model.archive import *
 from ncsw_data.storage.cacs.sqlite.model.workbench import *
 
-
-ArchiveCompoundsTuple = Tuple[
+CaCSSQLiteDatabaseArchiveCompoundTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveCompound
 ]
 
-ArchiveCompoundsFromSourcesTuple = Tuple[
+CaCSSQLiteDatabaseArchiveCompoundFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveCompound,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
-ArchiveCompoundPatternsTuple = Tuple[
+CaCSSQLiteDatabaseArchiveCompoundPatternTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveCompoundPattern
 ]
 
-ArchiveCompoundPatternsFromSourcesTuple = Tuple[
+CaCSSQLiteDatabaseArchiveCompoundPatternFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveCompoundPattern,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
-ArchiveReactionsTuple = Tuple[
+CaCSSQLiteDatabaseArchiveReactionTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveReaction
 ]
 
-ArchiveReactionsFromSourcesTuple = Tuple[
+CaCSSQLiteDatabaseArchiveReactionFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveReaction,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
-ArchiveReactionPatternsTuple = Tuple[
+CaCSSQLiteDatabaseArchiveReactionPatternTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveReactionPattern
 ]
 
-ArchiveReactionPatternsFromSourcesTuple = Tuple[
+CaCSSQLiteDatabaseArchiveReactionPatternFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveReactionPattern,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
-WorkbenchCompoundsTuple = Tuple[
+CaCSSQLiteDatabaseWorkbenchCompoundTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchCompound
 ]
 
-WorkbenchCompoundsFromSourcesTuple = Tuple[
+CaCSSQLiteDatabaseWorkbenchCompoundFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchCompound,
     CaCSSQLiteDatabaseModelArchiveCompound,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
-WorkbenchCompoundPatternsTuple = Tuple[
+CaCSSQLiteDatabaseWorkbenchCompoundPatternTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchCompoundPattern
 ]
 
-WorkbenchCompoundPatternsFromSourcesTuple = Tuple[
+CaCSSQLiteDatabaseWorkbenchCompoundPatternFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
     CaCSSQLiteDatabaseModelArchiveCompoundPattern,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
-WorkbenchReactionsTuple = Tuple[
+CaCSSQLiteDatabaseWorkbenchReactionTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchReaction
 ]
 
-WorkbenchReactionsFromSourcesTuple = Tuple[
+CaCSSQLiteDatabaseWorkbenchReactionFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchReaction,
     CaCSSQLiteDatabaseModelArchiveReaction,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
-WorkbenchReactionPatternsTuple = Tuple[
+CaCSSQLiteDatabaseWorkbenchReactionPatternTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchReactionPattern
 ]
 
-WorkbenchReactionPatternsFromSourcesTuple = Tuple[
+CaCSSQLiteDatabaseWorkbenchReactionPatternFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchReactionPattern,
     CaCSSQLiteDatabaseModelArchiveReactionPattern,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
+
+ReversedSynthesisRouteTuple = Tuple[int, int, str, bool, bool, Optional[int], Optional[int], Optional[str]]
