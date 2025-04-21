@@ -17,7 +17,7 @@ class CaCSSQLiteDatabaseModelReprMethodMixin:
         """
         The `__repr__` method of the class.
 
-        :returns: The string representation of a database model instance.
+        :returns: The string representation of the database model instances.
         """
 
         return "{table_name:s}({table_column_names_and_values:s})".format(

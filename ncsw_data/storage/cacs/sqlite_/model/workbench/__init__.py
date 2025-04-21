@@ -14,10 +14,6 @@ from ncsw_data.storage.cacs.sqlite_.model.workbench.compound_pattern_archive imp
     CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive
 )
 
-from ncsw_data.storage.cacs.sqlite_.model.workbench.compound_structure_pattern import (
-    CaCSSQLiteDatabaseModelWorkbenchCompoundStructurePattern
-)
-
 from ncsw_data.storage.cacs.sqlite_.model.workbench.reaction import CaCSSQLiteDatabaseModelWorkbenchReaction
 
 from ncsw_data.storage.cacs.sqlite_.model.workbench.reaction_archive import (

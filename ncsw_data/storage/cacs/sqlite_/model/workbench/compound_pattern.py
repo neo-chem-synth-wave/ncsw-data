@@ -59,9 +59,3 @@ class CaCSSQLiteDatabaseModelWorkbenchCompoundPattern(
         secondary="workbench_reaction_product_compound_pattern",
         back_populates="workbench_product_compound_patterns"
     )
-
-    workbench_compounds = relationship(
-        "CaCSSQLiteDatabaseModelWorkbenchCompound",
-        secondary="workbench_compound_structure_pattern",
-        back_populates="workbench_compound_patterns"
-    )
