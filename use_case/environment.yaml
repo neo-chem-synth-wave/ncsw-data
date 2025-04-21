@@ -1,0 +1,18 @@
+name: ncsw-data-use-case-env
+
+channels:
+  - conda-forge
+
+dependencies:
+  - pip
+  - py7zr
+  - python=3.8
+  - rdkit
+  - requests
+  - tqdm
+  - pip:
+      - ord-schema
+      - pqdm
+      - pyarrow
+      - rdchiral
+      - rxnmapper
