@@ -118,61 +118,6 @@ class CaCSSQLiteDatabaseSelectUtility:
         return ac_from_source_select_statement
 
     ####################################################################################################################
-    # archive_reaction AS ar
-    ####################################################################################################################
-
-    @staticmethod
-    def construct_archive_reaction_select_statement(
-    ) -> Select[CaCSSQLiteDatabaseArchiveReactionTuple]:
-        """
-        Construct the archive chemical reaction select statement of the database.
-
-        :returns: The archive chemical reaction select statement of the database.
-        """
-
-        return select(
-            CaCSSQLiteDatabaseModelArchiveReaction
-        )
-
-    @staticmethod
-    def construct_archive_reaction_from_source_select_statement(
-            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
-    ) -> Select[CaCSSQLiteDatabaseArchiveReactionFromSourceTuple]:
-        """
-        Construct the archive chemical reaction from source select statement of the database.
-
-        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
-            which the archive chemical reactions should be retrieved.
-
-        :returns: The archive chemical reaction from source select statement of the database.
-        """
-
-        ar_from_source_select_statement = select(
-            CaCSSQLiteDatabaseModelArchiveReaction,
-            CaCSSQLiteDatabaseModelArchiveSource
-        ).join(
-            target=CaCSSQLiteDatabaseModelArchiveReactionSource,
-            onclause=(
-                CaCSSQLiteDatabaseModelArchiveReaction.id ==
-                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_reaction_id
-            )
-        ).join(
-            target=CaCSSQLiteDatabaseModelArchiveSource,
-            onclause=(
-                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_source_id ==
-                CaCSSQLiteDatabaseModelArchiveSource.id
-            )
-        )
-
-        if as_names_versions_and_file_names is not None:
-            return CaCSSQLiteDatabaseSelectUtility._add_archive_source_where_clause_to_select_statement(
-                select_statement=ar_from_source_select_statement,
-                as_names_versions_and_file_names=as_names_versions_and_file_names
-            )
-
-        return ar_from_source_select_statement
-
-    ####################################################################################################################
     # archive_compound_pattern AS acp
     ####################################################################################################################
 
@@ -226,6 +171,61 @@ class CaCSSQLiteDatabaseSelectUtility:
             )
 
         return acp_from_source_select_statement
+
+    ####################################################################################################################
+    # archive_reaction AS ar
+    ####################################################################################################################
+
+    @staticmethod
+    def construct_archive_reaction_select_statement(
+    ) -> Select[CaCSSQLiteDatabaseArchiveReactionTuple]:
+        """
+        Construct the archive chemical reaction select statement of the database.
+
+        :returns: The archive chemical reaction select statement of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelArchiveReaction
+        )
+
+    @staticmethod
+    def construct_archive_reaction_from_source_select_statement(
+            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[CaCSSQLiteDatabaseArchiveReactionFromSourceTuple]:
+        """
+        Construct the archive chemical reaction from source select statement of the database.
+
+        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
+            which the archive chemical reactions should be retrieved.
+
+        :returns: The archive chemical reaction from source select statement of the database.
+        """
+
+        ar_from_source_select_statement = select(
+            CaCSSQLiteDatabaseModelArchiveReaction,
+            CaCSSQLiteDatabaseModelArchiveSource
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveReactionSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReaction.id ==
+                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_reaction_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
+        )
+
+        if as_names_versions_and_file_names is not None:
+            return CaCSSQLiteDatabaseSelectUtility._add_archive_source_where_clause_to_select_statement(
+                select_statement=ar_from_source_select_statement,
+                as_names_versions_and_file_names=as_names_versions_and_file_names
+            )
+
+        return ar_from_source_select_statement
 
     ####################################################################################################################
     # archive_reaction_pattern AS arp
@@ -368,6 +368,74 @@ class CaCSSQLiteDatabaseSelectUtility:
             )
 
         return wc_from_source_select_statement
+
+    ####################################################################################################################
+    # workbench_compound_pattern AS wcp
+    ####################################################################################################################
+
+    @staticmethod
+    def construct_workbench_compound_pattern_select_statement(
+    ) -> Select[CaCSSQLiteDatabaseWorkbenchCompoundPatternTuple]:
+        """
+        Construct the workbench chemical compound pattern select statement of the database.
+
+        :returns: The workbench chemical compound pattern select statement of the database.
+        """
+
+        return select(
+            CaCSSQLiteDatabaseModelWorkbenchCompoundPattern
+        )
+
+    @staticmethod
+    def construct_workbench_compound_pattern_from_source_select_statement(
+            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
+    ) -> Select[CaCSSQLiteDatabaseWorkbenchCompoundPatternFromSourceTuple]:
+        """
+        Construct the workbench chemical compound pattern from source select statement of the database.
+
+        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
+            which the workbench chemical compound patterns should be retrieved.
+
+        :returns: The workbench chemical compound pattern from source select statement of the database.
+        """
+
+        wcp_from_source_select_statement = select(
+            CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
+            CaCSSQLiteDatabaseModelArchiveCompoundPattern,
+            CaCSSQLiteDatabaseModelArchiveSource
+        ).join(
+            target=CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id ==
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.workbench_compound_pattern_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveCompoundPattern,
+            onclause=(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.archive_compound_pattern_id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id ==
+                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id
+            )
+        ).join(
+            target=CaCSSQLiteDatabaseModelArchiveSource,
+            onclause=(
+                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveSource.id
+            )
+        )
+
+        if as_names_versions_and_file_names is not None:
+            return CaCSSQLiteDatabaseSelectUtility._add_archive_source_where_clause_to_select_statement(
+                select_statement=wcp_from_source_select_statement,
+                as_names_versions_and_file_names=as_names_versions_and_file_names
+            )
+
+        return wcp_from_source_select_statement
 
     ####################################################################################################################
     # workbench_reaction AS wr
@@ -613,74 +681,6 @@ class CaCSSQLiteDatabaseSelectUtility:
         return wr_from_source_select_statement
 
     ####################################################################################################################
-    # workbench_compound_pattern AS wcp
-    ####################################################################################################################
-
-    @staticmethod
-    def construct_workbench_compound_pattern_select_statement(
-    ) -> Select[CaCSSQLiteDatabaseWorkbenchCompoundPatternTuple]:
-        """
-        Construct the workbench chemical compound pattern select statement of the database.
-
-        :returns: The workbench chemical compound pattern select statement of the database.
-        """
-
-        return select(
-            CaCSSQLiteDatabaseModelWorkbenchCompoundPattern
-        )
-
-    @staticmethod
-    def construct_workbench_compound_pattern_from_source_select_statement(
-            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]]
-    ) -> Select[CaCSSQLiteDatabaseWorkbenchCompoundPatternFromSourceTuple]:
-        """
-        Construct the workbench chemical compound pattern from source select statement of the database.
-
-        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
-            which the workbench chemical compound patterns should be retrieved.
-
-        :returns: The workbench chemical compound pattern from source select statement of the database.
-        """
-
-        wcp_from_source_select_statement = select(
-            CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
-            CaCSSQLiteDatabaseModelArchiveCompoundPattern,
-            CaCSSQLiteDatabaseModelArchiveSource
-        ).join(
-            target=CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive,
-            onclause=(
-                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id ==
-                CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.workbench_compound_pattern_id
-            )
-        ).join(
-            target=CaCSSQLiteDatabaseModelArchiveCompoundPattern,
-            onclause=(
-                CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.archive_compound_pattern_id ==
-                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id
-            )
-        ).join(
-            target=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource,
-            onclause=(
-                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id ==
-                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id
-            )
-        ).join(
-            target=CaCSSQLiteDatabaseModelArchiveSource,
-            onclause=(
-                CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id ==
-                CaCSSQLiteDatabaseModelArchiveSource.id
-            )
-        )
-
-        if as_names_versions_and_file_names is not None:
-            return CaCSSQLiteDatabaseSelectUtility._add_archive_source_where_clause_to_select_statement(
-                select_statement=wcp_from_source_select_statement,
-                as_names_versions_and_file_names=as_names_versions_and_file_names
-            )
-
-        return wcp_from_source_select_statement
-
-    ####################################################################################################################
     # workbench_reaction_pattern AS wrp
     ####################################################################################################################
 
@@ -741,8 +741,8 @@ class CaCSSQLiteDatabaseSelectUtility:
                 ).join(
                     target=CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
                     onclause=(
-                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern.workbench_compound_pattern_id ==
-                        CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern.workbench_compound_pattern_id
+                        == CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
                     )
                 ).where(
                     CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
@@ -849,8 +849,8 @@ class CaCSSQLiteDatabaseSelectUtility:
                 ).join(
                     target=CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
                     onclause=(
-                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern.workbench_compound_pattern_id ==
-                        CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
+                        CaCSSQLiteDatabaseModelWorkbenchReactionSpectatorCompoundPattern.workbench_compound_pattern_id
+                        == CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id
                     )
                 ).where(
                     CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
@@ -1158,6 +1158,3 @@ class CaCSSQLiteDatabaseSelectUtility:
             reversed_sr_select_statement.c.prior_reaction_id,
             reversed_sr_select_statement.c.target_compound_id
         )
-
-    ####################################################################################################################
-    ####################################################################################################################
