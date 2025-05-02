@@ -540,7 +540,7 @@ def process_reaction_compound_pattern_smarts(
 def process_reaction_pattern_smarts(
         reaction_pattern_smarts: str,
         logger: Optional[Logger] = None
-) -> Optional[Tuple[str, List[str], List[str], List[str]]]:
+) -> Optional[List[Tuple[str, List[str], List[str], List[str]]]]:
     """
     Process the SMARTS string of a chemical reaction pattern.
 
@@ -595,12 +595,12 @@ def process_reaction_pattern_smarts(
         ):
             return None
 
-        return (
+        return [(
             reaction_pattern_smarts,
             processed_reaction_pattern_reactant_compound_pattern_smarts_strings,
             processed_reaction_pattern_spectator_compound_pattern_smarts_strings,
             processed_reaction_pattern_product_compound_pattern_smarts_strings,
-        )
+        ), ]
 
     except Exception as exception_handle:
         if logger is not None:
@@ -625,7 +625,7 @@ def process_reaction_pattern_smarts_strings(
         reaction_pattern_smarts_strings: Iterable[str],
         number_of_processes: int = 1,
         logger: Optional[Logger] = None
-) -> List[Optional[Tuple[str, List[str], List[str], List[str]]]]:
+) -> List[Optional[List[Tuple[str, List[str], List[str], List[str]]]]]:
     """
     Process the SMARTS strings of the chemical reaction patterns.
 

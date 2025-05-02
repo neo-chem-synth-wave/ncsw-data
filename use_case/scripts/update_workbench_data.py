@@ -256,7 +256,22 @@ def extract_reaction_transformation_pattern_smarts_strings(
                     )
                 )
 
-            except TimeoutError:
+            except Exception as exception_handle:
+                if logger is not None:
+                    logger.error(
+                        msg=(
+                            "The extraction of the chemical reaction transformation pattern from the chemical reaction SMILES "
+                            "string '{mapped_reaction_smiles:s}' has been unsuccessful."
+                        ).format(
+                            mapped_reaction_smiles=mapped_reaction_smiles
+                        )
+                    )
+
+                    logger.debug(
+                        msg=exception_handle,
+                        exc_info=True
+                    )
+
                 processed_reaction_pattern_smarts_strings.append(
                     async_result
                 )
@@ -374,7 +389,8 @@ if __name__ == "__main__":
     sqlite_database.extract_workbench_reaction_transformation_patterns(
         wrp_extraction_function=partial(
             extract_reaction_transformation_pattern_smarts_strings,
-            number_of_processes=script_arguments.number_of_processes
+            number_of_processes=script_arguments.number_of_processes,
+            logger=script_logger
         ),
         db_user=script_arguments.database_user,
         db_chunk_limit=script_arguments.database_chunk_limit
