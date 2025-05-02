@@ -5,9 +5,10 @@ from math import ceil
 from typing import Collection, Generator, Iterable, Optional, Sequence, Tuple
 
 from sqlalchemy.engine.create import create_engine
+from sqlalchemy.engine.result import Result
 from sqlalchemy.engine.row import Row
 from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.sql import select
+from sqlalchemy.sql import select, text
 from sqlalchemy.sql.functions import count
 
 from tqdm.auto import tqdm
@@ -110,6 +111,34 @@ class CaCSSQLiteDatabase(DataStorageBase):
             bind=self.__db_engine,
             **kwargs
         )
+
+    def execute_select_statement(
+            self,
+            select_statement_text: str
+    ) -> Result:
+        """
+        Execute a select statement.
+
+        :parameter select_statement_text: The text of the select statement.
+
+        :returns: The result of the select statement.
+        """
+
+        try:
+            with self.__db_sessionmaker() as database_session:
+                return database_session.execute(
+                    statement=text(
+                        text=select_statement_text
+                    )
+                )
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.exception(
+                    msg=exception_handle
+                )
+
+            raise
 
     ####################################################################################################################
     # archive_compound AS ac
@@ -221,9 +250,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acs = db_session.scalar(
                     statement=ac_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -268,9 +295,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acs_from_sources = db_session.scalar(
                     statement=ac_from_source_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -408,9 +433,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acps = db_session.scalar(
                     statement=acp_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -455,9 +478,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acps_from_sources = db_session.scalar(
                     statement=acp_from_source_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -588,9 +609,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_ars = db_session.scalar(
                     statement=ar_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -635,9 +654,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_ars_from_sources = db_session.scalar(
                     statement=ar_from_source_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -775,9 +792,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_arps = db_session.scalar(
                     statement=arp_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -822,9 +837,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_arps_from_sources = db_session.scalar(
                     statement=arp_from_source_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -886,9 +899,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acs_from_sources = db_session.scalar(
                     statement=select(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     ).select_from(
                         ac_from_source_select_statement.with_only_columns(
                             CaCSSQLiteDatabaseModelArchiveCompound.id,
@@ -996,9 +1007,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wcs = db_session.scalar(
                     statement=wc_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -1047,9 +1056,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wcs_from_sources = db_session.scalar(
                     statement=wc_from_source_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -1108,9 +1115,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acps_from_sources = db_session.scalar(
                     statement=select(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     ).select_from(
                         acp_from_source_select_statement.with_only_columns(
                             CaCSSQLiteDatabaseModelArchiveCompoundPattern.id,
@@ -1214,9 +1219,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wcps = db_session.scalar(
                     statement=wcp_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -1261,9 +1264,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wcps_from_sources = db_session.scalar(
                     statement=wcp_from_source_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -1322,9 +1323,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_ars_from_sources = db_session.scalar(
                     statement=select(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     ).select_from(
                         ar_from_source_select_statement.with_only_columns(
                             CaCSSQLiteDatabaseModelArchiveReaction.id,
@@ -1441,9 +1440,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wrs = db_session.scalar(
                     statement=wr_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -1497,9 +1494,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wrs_from_sources = db_session.scalar(
                     statement=wr_from_source_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -1558,9 +1553,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_arps_from_sources = db_session.scalar(
                     statement=select(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     ).select_from(
                         arp_from_source_select_statement.with_only_columns(
                             CaCSSQLiteDatabaseModelArchiveReactionPattern.id,
@@ -1682,9 +1675,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wrps = db_session.scalar(
                     statement=wrp_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -1741,9 +1732,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wrps_from_sources = db_session.scalar(
                     statement=wrp_from_source_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 
@@ -1800,9 +1789,7 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wrs = db_session.scalar(
                     statement=wr_select_statement.with_only_columns(
-                        count(
-                            expression="*"
-                        )
+                        count()
                     )
                 )
 

@@ -907,7 +907,7 @@ class CaCSSQLiteDatabaseSelectUtility:
         ).join(
             target=CaCSSQLiteDatabaseModelArchiveSource,
             onclause=(
-                CaCSSQLiteDatabaseModelArchiveReactionSource.archive_source_id ==
+                CaCSSQLiteDatabaseModelArchiveReactionPatternSource.archive_source_id ==
                 CaCSSQLiteDatabaseModelArchiveSource.id
             )
         )
