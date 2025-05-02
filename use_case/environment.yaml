@@ -4,9 +4,9 @@ channels:
   - conda-forge
 
 dependencies:
+  - notebook
   - pip
   - py7zr
-  - python=3.8
   - rdkit
   - requests
   - tqdm
