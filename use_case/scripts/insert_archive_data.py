@@ -140,7 +140,8 @@ if __name__ == "__main__":
     sqlite_database.create_tables()
 
     archive_dataframe = read_csv(
-        filepath_or_buffer=script_arguments.input_csv_file_path
+        filepath_or_buffer=script_arguments.input_csv_file_path,
+        low_memory=False
     )
 
     if script_arguments.data_source_category == "compound":

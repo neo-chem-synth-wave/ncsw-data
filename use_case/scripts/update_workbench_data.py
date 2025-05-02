@@ -273,7 +273,7 @@ def extract_reaction_transformation_pattern_smarts_strings(
                     )
 
                 processed_reaction_pattern_smarts_strings.append(
-                    async_result
+                    None
                 )
 
         process_pool.close()
