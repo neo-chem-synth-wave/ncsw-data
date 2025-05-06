@@ -2,8 +2,8 @@
 
 from typing import Dict, Iterable, List, Mapping, Optional, Tuple
 
-from sqlalchemy.dialects.sqlite.dml import insert
-from sqlalchemy.orm.session import Session
+from sqlalchemy.dialects.sqlite import insert
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import select
 
 from ncsw_data.storage.cacs.sqlite_.model.archive import *
