@@ -1,7 +1,6 @@
 """ The ``ncsw_data.storage.cacs.sqlite_.model.workbench`` package ``compound_pattern_archive`` module. """
 
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm.base import Mapped
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Integer
 

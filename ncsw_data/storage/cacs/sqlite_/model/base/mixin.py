@@ -2,9 +2,8 @@
 
 from datetime import datetime
 
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm.base import Mapped
-from sqlalchemy.sql.functions import func
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime, String
 
 
@@ -39,7 +38,7 @@ class CaCSSQLiteDatabaseModelTimestampColumnsMixin:
             timezone=True
         ),
         nullable=False,
-        server_default=func.now()
+        default=func.now()
     )
 
     created_by: Mapped[str] = mapped_column(
@@ -54,7 +53,7 @@ class CaCSSQLiteDatabaseModelTimestampColumnsMixin:
             timezone=True
         ),
         nullable=True,
-        server_onupdate=func.now()
+        onupdate=func.now()
     )
 
     updated_by: Mapped[str] = mapped_column(

@@ -1,7 +1,6 @@
 """ The ``ncsw_data.storage.cacs.sqlite_.model.workbench`` package ``compound`` module. """
 
-from sqlalchemy.orm import mapped_column, relationship
-from sqlalchemy.orm.base import Mapped
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import Boolean, Integer, Text
 
 from ncsw_data.storage.cacs.sqlite_.model.base.base import CaCSSQLiteDatabaseModelBase
@@ -30,7 +29,6 @@ class CaCSSQLiteDatabaseModelWorkbenchCompound(
     smiles: Mapped[str] = mapped_column(
         Text,
         nullable=False,
-        index=True,
         unique=True
     )
 
