@@ -5,7 +5,6 @@ from os import PathLike
 from typing import Dict, List, Optional, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-
 from ncsw_data.source.compound_pattern.rdkit_.rdkit_ import RDKitCompoundPatternDataset
 
 
@@ -90,7 +89,8 @@ class CompoundPatternDataSource(DataSourceBase):
         if name in self.get_names_of_supported_data_sources():
             self.supported_data_sources[name].download(
                 version=version,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:
@@ -128,7 +128,8 @@ class CompoundPatternDataSource(DataSourceBase):
             self.supported_data_sources[name].extract(
                 version=version,
                 input_directory_path=input_directory_path,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:
@@ -166,7 +167,8 @@ class CompoundPatternDataSource(DataSourceBase):
             self.supported_data_sources[name].format(
                 version=version,
                 input_directory_path=input_directory_path,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:

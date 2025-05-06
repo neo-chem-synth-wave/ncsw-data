@@ -1,18 +1,23 @@
-""" The ``data_source.reaction.rhea`` package ``rhea`` module. """
+""" The ``ncsw_data.source.reaction.rhea`` package ``rhea`` module. """
 
+from functools import lru_cache
 from os import PathLike
 from re import search
 from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
 from ncsw_data.source.base.utility.download import DataSourceDownloadUtility
-
-from ncsw_data.source.reaction.rhea.utility import *
+from ncsw_data.source.reaction.rhea.utility.download import RheaReactionDatabaseDownloadUtility
+from ncsw_data.source.reaction.rhea.utility.extraction import RheaReactionDatabaseExtractionUtility
+from ncsw_data.source.reaction.rhea.utility.formatting import RheaReactionDatabaseFormattingUtility
 
 
 class RheaReactionDatabase(DataSourceBase):
     """ The `Rhea <https://www.rhea-db.org>`_ chemical reaction database class. """
 
+    @lru_cache(
+        maxsize=None
+    )
     def get_supported_versions(
             self
     ) -> Dict[str, str]:
@@ -32,7 +37,7 @@ class RheaReactionDatabase(DataSourceBase):
             latest_release_number = int(
                 search(
                     pattern=r"rhea\.release\.number=(\d+)",
-                    string=str(http_get_request_response.content)
+                    string=http_get_request_response.text
                 ).group(1)
             )
 

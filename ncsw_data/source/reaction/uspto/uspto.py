@@ -4,8 +4,9 @@ from os import PathLike
 from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-
-from ncsw_data.source.reaction.uspto.utility import *
+from ncsw_data.source.reaction.uspto.utility.download import USPTOReactionDatasetDownloadUtility
+from ncsw_data.source.reaction.uspto.utility.extraction import USPTOReactionDatasetExtractionUtility
+from ncsw_data.source.reaction.uspto.utility.formatting import USPTOReactionDatasetFormattingUtility
 
 
 class USPTOReactionDataset(DataSourceBase):

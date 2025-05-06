@@ -4,8 +4,8 @@ from os import PathLike
 from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-
-from ncsw_data.source.compound.miscellaneous.utility import *
+from ncsw_data.source.compound.miscellaneous.utility.download import MiscellaneousCompoundDataSourceDownloadUtility
+from ncsw_data.source.compound.miscellaneous.utility.formatting import MiscellaneousCompoundDataSourceFormattingUtility
 
 
 class MiscellaneousCompoundDataSource(DataSourceBase):

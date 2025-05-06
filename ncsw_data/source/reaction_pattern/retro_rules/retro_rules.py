@@ -5,7 +5,17 @@ from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
 
-from ncsw_data.source.reaction_pattern.retro_rules.utility import *
+from ncsw_data.source.reaction_pattern.retro_rules.utility.download import (
+    RetroRulesReactionPatternDatabaseDownloadUtility
+)
+
+from ncsw_data.source.reaction_pattern.retro_rules.utility.extraction import (
+    RetroRulesReactionPatternDatabaseExtractionUtility
+)
+
+from ncsw_data.source.reaction_pattern.retro_rules.utility.formatting import (
+    RetroRulesReactionPatternDatabaseFormattingUtility
+)
 
 
 class RetroRulesReactionPatternDatabase(DataSourceBase):

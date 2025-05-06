@@ -5,7 +5,6 @@ from os import PathLike
 from typing import Dict, List, Optional, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-
 from ncsw_data.source.reaction.crd.crd import ChemicalReactionDatabase
 from ncsw_data.source.reaction.miscellaneous.miscellaneous import MiscellaneousReactionDataSource
 from ncsw_data.source.reaction.ord.ord import OpenReactionDatabase
@@ -106,7 +105,8 @@ class ReactionDataSource(DataSourceBase):
         if name in self.get_names_of_supported_data_sources():
             self.supported_data_sources[name].download(
                 version=version,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:
@@ -144,7 +144,8 @@ class ReactionDataSource(DataSourceBase):
             self.supported_data_sources[name].extract(
                 version=version,
                 input_directory_path=input_directory_path,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:

@@ -4,8 +4,9 @@ from os import PathLike
 from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-
-from ncsw_data.source.reaction.crd.utility import *
+from ncsw_data.source.reaction.crd.utility.download import ChemicalReactionDatabaseDownloadUtility
+from ncsw_data.source.reaction.crd.utility.extraction import ChemicalReactionDatabaseExtractionUtility
+from ncsw_data.source.reaction.crd.utility.formatting import ChemicalReactionDatabaseFormattingUtility
 
 
 class ChemicalReactionDatabase(DataSourceBase):

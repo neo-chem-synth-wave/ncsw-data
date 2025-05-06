@@ -5,7 +5,17 @@ from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
 
-from ncsw_data.source.reaction_pattern.miscellaneous.utility import *
+from ncsw_data.source.reaction_pattern.miscellaneous.utility.download import (
+    MiscellaneousReactionPatternDataSourceDownloadUtility
+)
+
+from ncsw_data.source.reaction_pattern.miscellaneous.utility.extraction import (
+    MiscellaneousReactionPatternDataSourceExtractionUtility
+)
+
+from ncsw_data.source.reaction_pattern.miscellaneous.utility.formatting import (
+    MiscellaneousReactionPatternDataSourceFormattingUtility
+)
 
 
 class MiscellaneousReactionPatternDataSource(DataSourceBase):
@@ -50,9 +60,10 @@ class MiscellaneousReactionPatternDataSource(DataSourceBase):
                     )
 
                 if version == "v_retro_transform_db_by_20180421_avramova_s_et_al":
-                    MiscellaneousReactionPatternDataSourceDownloadUtility.download_v_retro_transform_db_by_20180421_avramova_s_et_al(
-                        output_directory_path=output_directory_path
-                    )
+                    MiscellaneousReactionPatternDataSourceDownloadUtility.\
+                        download_v_retro_transform_db_by_20180421_avramova_s_et_al(
+                            output_directory_path=output_directory_path
+                        )
 
                 if version == "v_dingos_by_20190701_button_a_et_al":
                     MiscellaneousReactionPatternDataSourceDownloadUtility.download_v_dingos_by_20190701_button_a_et_al(
@@ -60,9 +71,10 @@ class MiscellaneousReactionPatternDataSource(DataSourceBase):
                     )
 
                 if version == "v_auto_template_by_20240627_chen_l_and_li_y":
-                    MiscellaneousReactionPatternDataSourceDownloadUtility.download_v_auto_template_by_20240627_chen_l_and_li_y(
-                        output_directory_path=output_directory_path
-                    )
+                    MiscellaneousReactionPatternDataSourceDownloadUtility.\
+                        download_v_auto_template_by_20240627_chen_l_and_li_y(
+                            output_directory_path=output_directory_path
+                        )
 
                 if self.logger is not None:
                     self.logger.info(
@@ -117,10 +129,11 @@ class MiscellaneousReactionPatternDataSource(DataSourceBase):
                     )
 
                 if version == "v_auto_template_by_20240627_chen_l_and_li_y":
-                    MiscellaneousReactionPatternDataSourceExtractionUtility.extract_v_auto_template_by_20240627_chen_l_and_li_y(
-                        input_directory_path=input_directory_path,
-                        output_directory_path=output_directory_path
-                    )
+                    MiscellaneousReactionPatternDataSourceExtractionUtility.\
+                        extract_v_auto_template_by_20240627_chen_l_and_li_y(
+                            input_directory_path=input_directory_path,
+                            output_directory_path=output_directory_path
+                        )
 
                 if self.logger is not None:
                     self.logger.info(
@@ -175,10 +188,11 @@ class MiscellaneousReactionPatternDataSource(DataSourceBase):
                     )
 
                 if version == "v_retro_transform_db_by_20180421_avramova_s_et_al":
-                    MiscellaneousReactionPatternDataSourceFormattingUtility.format_v_retro_transform_db_by_20180421_avramova_s_et_al(
-                        input_directory_path=input_directory_path,
-                        output_directory_path=output_directory_path
-                    )
+                    MiscellaneousReactionPatternDataSourceFormattingUtility.\
+                        format_v_retro_transform_db_by_20180421_avramova_s_et_al(
+                            input_directory_path=input_directory_path,
+                            output_directory_path=output_directory_path
+                        )
 
                 if version == "v_dingos_by_20190701_button_a_et_al":
                     MiscellaneousReactionPatternDataSourceFormattingUtility.format_v_dingos_by_20190701_button_a_et_al(
@@ -187,10 +201,11 @@ class MiscellaneousReactionPatternDataSource(DataSourceBase):
                     )
 
                 if version == "v_auto_template_by_20240627_chen_l_and_li_y":
-                    MiscellaneousReactionPatternDataSourceFormattingUtility.format_v_auto_template_by_20240627_chen_l_and_li_y(
-                        input_directory_path=input_directory_path,
-                        output_directory_path=output_directory_path
-                    )
+                    MiscellaneousReactionPatternDataSourceFormattingUtility.\
+                        format_v_auto_template_by_20240627_chen_l_and_li_y(
+                            input_directory_path=input_directory_path,
+                            output_directory_path=output_directory_path
+                        )
 
                 if self.logger is not None:
                     self.logger.info(

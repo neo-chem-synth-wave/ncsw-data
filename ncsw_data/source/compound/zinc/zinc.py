@@ -1,18 +1,23 @@
 """ The ``ncsw_data.source.compound.zinc`` package ``zinc`` module. """
 
+from functools import lru_cache
 from os import PathLike
 from re import findall
 from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
 from ncsw_data.source.base.utility.download import DataSourceDownloadUtility
-
-from ncsw_data.source.compound.zinc.utility import *
+from ncsw_data.source.compound.zinc.utility.download import ZINCCompoundDatabaseDownloadUtility
+from ncsw_data.source.compound.zinc.utility.extraction import ZINCCompoundDatabaseExtractionUtility
+from ncsw_data.source.compound.zinc.utility.formatting import ZINCCompoundDatabaseFormattingUtility
 
 
 class ZINCCompoundDatabase(DataSourceBase):
     """ The `ZINC <https://zinc.docking.org>`_ chemical compound database class. """
 
+    @lru_cache(
+        maxsize=None
+    )
     def get_supported_versions(
             self
     ) -> Dict[str, str]:

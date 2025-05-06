@@ -5,7 +5,6 @@ from os import PathLike
 from typing import Dict, List, Optional, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-
 from ncsw_data.source.compound.chembl.chembl import ChEMBLCompoundDatabase
 from ncsw_data.source.compound.coconut.coconut import COCONUTCompoundDatabase
 from ncsw_data.source.compound.miscellaneous.miscellaneous import MiscellaneousCompoundDataSource
@@ -102,7 +101,8 @@ class CompoundDataSource(DataSourceBase):
         if name in self.get_names_of_supported_data_sources():
             self.supported_data_sources[name].download(
                 version=version,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:
@@ -140,7 +140,8 @@ class CompoundDataSource(DataSourceBase):
             self.supported_data_sources[name].extract(
                 version=version,
                 input_directory_path=input_directory_path,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:
@@ -178,7 +179,8 @@ class CompoundDataSource(DataSourceBase):
             self.supported_data_sources[name].format(
                 version=version,
                 input_directory_path=input_directory_path,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:

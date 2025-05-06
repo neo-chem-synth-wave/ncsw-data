@@ -1,18 +1,23 @@
 """ The ``ncsw_data.source.compound.chembl`` package ``chembl`` module. """
 
+from functools import lru_cache
 from os import PathLike
 from re import search
 from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
 from ncsw_data.source.base.utility.download import DataSourceDownloadUtility
-
-from ncsw_data.source.compound.chembl.utility import *
+from ncsw_data.source.compound.chembl.utility.download import ChEMBLCompoundDatabaseDownloadUtility
+from ncsw_data.source.compound.chembl.utility.extraction import ChEMBLCompoundDatabaseExtractionUtility
+from ncsw_data.source.compound.chembl.utility.formatting import ChEMBLCompoundDatabaseFormattingUtility
 
 
 class ChEMBLCompoundDatabase(DataSourceBase):
     """ The `ChEMBL <https://www.ebi.ac.uk/chembl>`_ chemical compound database class. """
 
+    @lru_cache(
+        maxsize=None
+    )
     def get_supported_versions(
             self
     ) -> Dict[str, str]:
@@ -32,7 +37,7 @@ class ChEMBLCompoundDatabase(DataSourceBase):
             latest_release_number = int(
                 search(
                     pattern=r"Release:\s*chembl_(\d+)",
-                    string=str(http_get_request_response.content)
+                    string=http_get_request_response.text
                 ).group(1)
             )
 

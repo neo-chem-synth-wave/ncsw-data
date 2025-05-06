@@ -4,8 +4,9 @@ from os import PathLike
 from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-
-from ncsw_data.source.compound.coconut.utility import *
+from ncsw_data.source.compound.coconut.utility.download import COCONUTCompoundDatabaseDownloadUtility
+from ncsw_data.source.compound.coconut.utility.extraction import COCONUTCompoundDatabaseExtractionUtility
+from ncsw_data.source.compound.coconut.utility.formatting import COCONUTCompoundDatabaseFormattingUtility
 
 
 class COCONUTCompoundDatabase(DataSourceBase):

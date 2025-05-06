@@ -30,7 +30,7 @@ class DataSourceBase(ABC):
         :returns: The value of the logger.
         """
 
-        return self.__logger
+        return self._logger
 
     @logger.setter
     def logger(
@@ -43,7 +43,7 @@ class DataSourceBase(ABC):
         :parameter value: The value of the logger.
         """
 
-        self.__logger = value
+        self._logger = value
 
     @abstractmethod
     def download(

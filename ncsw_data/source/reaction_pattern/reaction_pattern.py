@@ -5,7 +5,6 @@ from os import PathLike
 from typing import Dict, List, Optional, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-
 from ncsw_data.source.reaction_pattern.miscellaneous.miscellaneous import MiscellaneousReactionPatternDataSource
 from ncsw_data.source.reaction_pattern.retro_rules.retro_rules import RetroRulesReactionPatternDatabase
 
@@ -94,7 +93,8 @@ class ReactionPatternDataSource(DataSourceBase):
         if name in self.get_names_of_supported_data_sources():
             self.supported_data_sources[name].download(
                 version=version,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:
@@ -132,7 +132,8 @@ class ReactionPatternDataSource(DataSourceBase):
             self.supported_data_sources[name].extract(
                 version=version,
                 input_directory_path=input_directory_path,
-                output_directory_path=output_directory_path
+                output_directory_path=output_directory_path,
+                **kwargs
             )
 
         else:
