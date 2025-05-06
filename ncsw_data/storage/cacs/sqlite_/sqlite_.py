@@ -4,9 +4,7 @@ from logging import Logger
 from math import ceil
 from typing import Collection, Generator, Iterable, Optional, Sequence, Tuple
 
-from sqlalchemy.engine.create import create_engine
-from sqlalchemy.engine.result import Result
-from sqlalchemy.engine.row import Row
+from sqlalchemy.engine import Result, Row, create_engine
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql import select, text
 from sqlalchemy.sql.functions import count
