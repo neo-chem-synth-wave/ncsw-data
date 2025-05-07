@@ -185,126 +185,6 @@ class CaCSSQLiteDatabaseInsertUtility:
         )
 
     ####################################################################################################################
-    # archive_compound_pattern AS acp
-    ####################################################################################################################
-
-    @staticmethod
-    def _insert_and_select_archive_compound_patterns(
-            db_session: Session,
-            acp_smarts_strings: Iterable[str],
-            acps_created_by: str
-    ) -> List[int]:
-        """
-        Insert and select the archive chemical compound patterns from the database.
-
-        :parameter db_session: The session of the database.
-        :parameter acp_smarts_strings: The SMARTS strings of the archive chemical compound patterns.
-        :parameter acps_created_by: The user of the database inserting the archive chemical compound patterns.
-
-        :returns: The IDs of the archive chemical compound patterns.
-        """
-
-        acps = list()
-
-        for acp_smarts in acp_smarts_strings:
-            acps.append({
-                "smarts": acp_smarts,
-                "created_by": acps_created_by,
-            })
-
-        db_session.execute(
-            statement=insert(
-                table=CaCSSQLiteDatabaseModelArchiveCompoundPattern
-            ).on_conflict_do_nothing(
-                index_elements=[
-                    CaCSSQLiteDatabaseModelArchiveCompoundPattern.smarts,
-                ]
-            ),
-            params=acps
-        )
-
-        acps = db_session.execute(
-            statement=select(
-                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id
-            ).where(
-                CaCSSQLiteDatabaseModelArchiveCompoundPattern.smarts.in_(
-                    acp_smarts_strings
-                )
-            )
-        ).all()
-
-        acp_ids = list()
-
-        for acp in acps:
-            acp_ids.append(
-                acp.id
-            )
-
-        return acp_ids
-
-    @staticmethod
-    def _insert_archive_compound_pattern_sources(
-            db_session: Session,
-            acp_ids: Iterable[int],
-            as_id: int
-    ) -> None:
-        """
-        Insert the archive chemical compound pattern sources into the database.
-
-        :parameter db_session: The session of the database.
-        :parameter acp_ids: The IDs of the archive chemical compound patterns.
-        :parameter as_id: The ID of the archive source.
-        """
-
-        acpss = list()
-
-        for acp_id in acp_ids:
-            acpss.append({
-                "archive_compound_pattern_id": acp_id,
-                "archive_source_id": as_id,
-            })
-
-        db_session.execute(
-            statement=insert(
-                table=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource
-            ).on_conflict_do_nothing(
-                index_elements=[
-                    CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id,
-                    CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id,
-                ]
-            ),
-            params=acpss
-        )
-
-    @staticmethod
-    def insert_archive_compound_patterns(
-            db_session: Session,
-            acps: Iterable[str],
-            acps_created_by: str,
-            as_id: int
-    ) -> None:
-        """
-        Insert the archive chemical compound patterns into the database.
-
-        :parameter db_session: The session of the database.
-        :parameter acps: The archive chemical compound patterns: [ `acp_smarts`, ... ].
-        :parameter acps_created_by: The user of the database inserting the archive chemical compound patterns.
-        :parameter as_id: The ID of the archive source.
-        """
-
-        acp_ids = CaCSSQLiteDatabaseInsertUtility._insert_and_select_archive_compound_patterns(
-            db_session=db_session,
-            acp_smarts_strings=acps,
-            acps_created_by=acps_created_by
-        )
-
-        CaCSSQLiteDatabaseInsertUtility._insert_archive_compound_pattern_sources(
-            db_session=db_session,
-            acp_ids=acp_ids,
-            as_id=as_id
-        )
-
-    ####################################################################################################################
     # archive_reaction AS ar
     ####################################################################################################################
 
@@ -421,6 +301,126 @@ class CaCSSQLiteDatabaseInsertUtility:
         CaCSSQLiteDatabaseInsertUtility._insert_archive_reaction_sources(
             db_session=db_session,
             ar_ids=ar_ids,
+            as_id=as_id
+        )
+
+    ####################################################################################################################
+    # archive_compound_pattern AS acp
+    ####################################################################################################################
+
+    @staticmethod
+    def _insert_and_select_archive_compound_patterns(
+            db_session: Session,
+            acp_smarts_strings: Iterable[str],
+            acps_created_by: str
+    ) -> List[int]:
+        """
+        Insert and select the archive chemical compound patterns from the database.
+
+        :parameter db_session: The session of the database.
+        :parameter acp_smarts_strings: The SMARTS strings of the archive chemical compound patterns.
+        :parameter acps_created_by: The user of the database inserting the archive chemical compound patterns.
+
+        :returns: The IDs of the archive chemical compound patterns.
+        """
+
+        acps = list()
+
+        for acp_smarts in acp_smarts_strings:
+            acps.append({
+                "smarts": acp_smarts,
+                "created_by": acps_created_by,
+            })
+
+        db_session.execute(
+            statement=insert(
+                table=CaCSSQLiteDatabaseModelArchiveCompoundPattern
+            ).on_conflict_do_nothing(
+                index_elements=[
+                    CaCSSQLiteDatabaseModelArchiveCompoundPattern.smarts,
+                ]
+            ),
+            params=acps
+        )
+
+        acps = db_session.execute(
+            statement=select(
+                CaCSSQLiteDatabaseModelArchiveCompoundPattern.id
+            ).where(
+                CaCSSQLiteDatabaseModelArchiveCompoundPattern.smarts.in_(
+                    acp_smarts_strings
+                )
+            )
+        ).all()
+
+        acp_ids = list()
+
+        for acp in acps:
+            acp_ids.append(
+                acp.id
+            )
+
+        return acp_ids
+
+    @staticmethod
+    def _insert_archive_compound_pattern_sources(
+            db_session: Session,
+            acp_ids: Iterable[int],
+            as_id: int
+    ) -> None:
+        """
+        Insert the archive chemical compound pattern sources into the database.
+
+        :parameter db_session: The session of the database.
+        :parameter acp_ids: The IDs of the archive chemical compound patterns.
+        :parameter as_id: The ID of the archive source.
+        """
+
+        acpss = list()
+
+        for acp_id in acp_ids:
+            acpss.append({
+                "archive_compound_pattern_id": acp_id,
+                "archive_source_id": as_id,
+            })
+
+        db_session.execute(
+            statement=insert(
+                table=CaCSSQLiteDatabaseModelArchiveCompoundPatternSource
+            ).on_conflict_do_nothing(
+                index_elements=[
+                    CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_compound_pattern_id,
+                    CaCSSQLiteDatabaseModelArchiveCompoundPatternSource.archive_source_id,
+                ]
+            ),
+            params=acpss
+        )
+
+    @staticmethod
+    def insert_archive_compound_patterns(
+            db_session: Session,
+            acps: Iterable[str],
+            acps_created_by: str,
+            as_id: int
+    ) -> None:
+        """
+        Insert the archive chemical compound patterns into the database.
+
+        :parameter db_session: The session of the database.
+        :parameter acps: The archive chemical compound patterns: [ `acp_smarts`, ... ].
+        :parameter acps_created_by: The user of the database inserting the archive chemical compound patterns.
+        :parameter as_id: The ID of the archive source.
+        """
+
+        acp_ids = CaCSSQLiteDatabaseInsertUtility._insert_and_select_archive_compound_patterns(
+            db_session=db_session,
+            acp_smarts_strings=acps,
+            acps_created_by=acps_created_by
+        )
+
+        CaCSSQLiteDatabaseInsertUtility._insert_archive_compound_pattern_sources(
+            db_session=db_session,
+            acp_ids=acp_ids,
             as_id=as_id
         )
 
@@ -698,127 +698,6 @@ class CaCSSQLiteDatabaseInsertUtility:
             db_session=db_session,
             ac_ids_and_wc_smiles_strings=wcs,
             wcs_smiles_to_id=wcs_smiles_to_id
-        )
-
-    ####################################################################################################################
-    # workbench_compound_pattern AS wcp
-    ####################################################################################################################
-
-    @staticmethod
-    def _insert_and_select_workbench_compound_patterns(
-            db_session: Session,
-            wcp_smarts_strings: Iterable[str],
-            wcps_created_by: str
-    ) -> Dict[str, int]:
-        """
-        Insert and select the workbench chemical compound patterns from the database.
-
-        :parameter db_session: The session of the database.
-        :parameter wcp_smarts_strings: The SMARTS strings of the workbench chemical compound patterns.
-        :parameter wcps_created_by: The user of the database inserting the workbench chemical compound patterns.
-
-        :returns: The SMARTS string to ID dictionary of the workbench chemical compound patterns.
-        """
-
-        wcps = list()
-
-        for wcp_smarts in wcp_smarts_strings:
-            wcps.append({
-                "smarts": wcp_smarts,
-                "created_by": wcps_created_by,
-            })
-
-        db_session.execute(
-            statement=insert(
-                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern
-            ).on_conflict_do_nothing(
-                index_elements=[
-                    CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts,
-                ]
-            ),
-            params=wcps
-        )
-
-        wcps = db_session.execute(
-            statement=select(
-                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id,
-                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts
-            ).where(
-                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
-                    wcp_smarts_strings
-                )
-            )
-        ).all()
-
-        wcps_smarts_to_id = dict()
-
-        for wcp in wcps:
-            wcps_smarts_to_id[wcp.smarts] = wcp.id
-
-        return wcps_smarts_to_id
-
-    @staticmethod
-    def _insert_workbench_compound_pattern_archives(
-            db_session: Session,
-            acp_ids_and_wcp_smarts_strings: Iterable[Tuple[int, str]],
-            wcps_smarts_to_id: Mapping[str, int]
-    ) -> None:
-        """
-        Insert the workbench chemical compound pattern archives into the database.
-
-        :parameter db_session: The session of the database.
-        :parameter acp_ids_and_wcp_smarts_strings: The IDs of the archive chemical compound patterns and SMARTS strings
-            of the workbench chemical compound patterns.
-        :parameter wcps_smarts_to_id: The SMARTS string to ID dictionary of the workbench chemical compound patterns.
-        """
-
-        wcpas = list()
-
-        for acp_id, wcp_smarts in acp_ids_and_wcp_smarts_strings:
-            wcpas.append({
-                "workbench_compound_pattern_id": wcps_smarts_to_id[wcp_smarts],
-                "archive_compound_pattern_id": acp_id,
-            })
-
-        db_session.execute(
-            statement=insert(
-                CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive
-            ).on_conflict_do_nothing(
-                index_elements=[
-                    CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.workbench_compound_pattern_id,
-                    CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.archive_compound_pattern_id,
-                ]
-            ),
-            params=wcpas
-        )
-
-    @staticmethod
-    def insert_workbench_compound_patterns(
-            db_session: Session,
-            wcps: Iterable[Tuple[int, str]],
-            wcps_created_by: str
-    ) -> None:
-        """
-        Insert the workbench chemical compound patterns into the database.
-
-        :parameter db_session: The session of the database.
-        :parameter wcps: The workbench chemical compound patterns: [ ( `acp_id`, `wcp_smarts`, ), ... ].
-        :parameter wcps_created_by: The user of the database inserting the workbench chemical compound patterns.
-        """
-
-        wcps_smarts_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_compound_patterns(
-            db_session=db_session,
-            wcp_smarts_strings=[
-                wcp_smarts
-                for _, wcp_smarts in wcps
-            ],
-            wcps_created_by=wcps_created_by
-        )
-
-        CaCSSQLiteDatabaseInsertUtility._insert_workbench_compound_pattern_archives(
-            db_session=db_session,
-            acp_ids_and_wcp_smarts_strings=wcps,
-            wcps_smarts_to_id=wcps_smarts_to_id
         )
 
     ####################################################################################################################
@@ -1142,6 +1021,127 @@ class CaCSSQLiteDatabaseInsertUtility:
             ],
             wrpcs_created_by=wrs_created_by,
             wrs_smiles_to_id=wrs_smiles_to_id
+        )
+
+    ####################################################################################################################
+    # workbench_compound_pattern AS wcp
+    ####################################################################################################################
+
+    @staticmethod
+    def _insert_and_select_workbench_compound_patterns(
+            db_session: Session,
+            wcp_smarts_strings: Iterable[str],
+            wcps_created_by: str
+    ) -> Dict[str, int]:
+        """
+        Insert and select the workbench chemical compound patterns from the database.
+
+        :parameter db_session: The session of the database.
+        :parameter wcp_smarts_strings: The SMARTS strings of the workbench chemical compound patterns.
+        :parameter wcps_created_by: The user of the database inserting the workbench chemical compound patterns.
+
+        :returns: The SMARTS string to ID dictionary of the workbench chemical compound patterns.
+        """
+
+        wcps = list()
+
+        for wcp_smarts in wcp_smarts_strings:
+            wcps.append({
+                "smarts": wcp_smarts,
+                "created_by": wcps_created_by,
+            })
+
+        db_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern
+            ).on_conflict_do_nothing(
+                index_elements=[
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts,
+                ]
+            ),
+            params=wcps
+        )
+
+        wcps = db_session.execute(
+            statement=select(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.id,
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts
+            ).where(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPattern.smarts.in_(
+                    wcp_smarts_strings
+                )
+            )
+        ).all()
+
+        wcps_smarts_to_id = dict()
+
+        for wcp in wcps:
+            wcps_smarts_to_id[wcp.smarts] = wcp.id
+
+        return wcps_smarts_to_id
+
+    @staticmethod
+    def _insert_workbench_compound_pattern_archives(
+            db_session: Session,
+            acp_ids_and_wcp_smarts_strings: Iterable[Tuple[int, str]],
+            wcps_smarts_to_id: Mapping[str, int]
+    ) -> None:
+        """
+        Insert the workbench chemical compound pattern archives into the database.
+
+        :parameter db_session: The session of the database.
+        :parameter acp_ids_and_wcp_smarts_strings: The IDs of the archive chemical compound patterns and SMARTS strings
+            of the workbench chemical compound patterns.
+        :parameter wcps_smarts_to_id: The SMARTS string to ID dictionary of the workbench chemical compound patterns.
+        """
+
+        wcpas = list()
+
+        for acp_id, wcp_smarts in acp_ids_and_wcp_smarts_strings:
+            wcpas.append({
+                "workbench_compound_pattern_id": wcps_smarts_to_id[wcp_smarts],
+                "archive_compound_pattern_id": acp_id,
+            })
+
+        db_session.execute(
+            statement=insert(
+                CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive
+            ).on_conflict_do_nothing(
+                index_elements=[
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.workbench_compound_pattern_id,
+                    CaCSSQLiteDatabaseModelWorkbenchCompoundPatternArchive.archive_compound_pattern_id,
+                ]
+            ),
+            params=wcpas
+        )
+
+    @staticmethod
+    def insert_workbench_compound_patterns(
+            db_session: Session,
+            wcps: Iterable[Tuple[int, str]],
+            wcps_created_by: str
+    ) -> None:
+        """
+        Insert the workbench chemical compound patterns into the database.
+
+        :parameter db_session: The session of the database.
+        :parameter wcps: The workbench chemical compound patterns: [ ( `acp_id`, `wcp_smarts`, ), ... ].
+        :parameter wcps_created_by: The user of the database inserting the workbench chemical compound patterns.
+        """
+
+        wcps_smarts_to_id = CaCSSQLiteDatabaseInsertUtility._insert_and_select_workbench_compound_patterns(
+            db_session=db_session,
+            wcp_smarts_strings=[
+                wcp_smarts
+                for _, wcp_smarts in wcps
+            ],
+            wcps_created_by=wcps_created_by
+        )
+
+        CaCSSQLiteDatabaseInsertUtility._insert_workbench_compound_pattern_archives(
+            db_session=db_session,
+            acp_ids_and_wcp_smarts_strings=wcps,
+            wcps_smarts_to_id=wcps_smarts_to_id
         )
 
     ####################################################################################################################

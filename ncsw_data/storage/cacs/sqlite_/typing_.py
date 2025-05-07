@@ -8,13 +8,13 @@ CaCSSQLiteDatabaseArchiveCompoundStandardizationCallable = Callable[
     Sequence[Optional[str]]
 ]
 
-CaCSSQLiteDatabaseArchiveCompoundPatternStandardizationCallable = \
-    CaCSSQLiteDatabaseArchiveCompoundStandardizationCallable
-
 CaCSSQLiteDatabaseArchiveReactionStandardizationCallable = Callable[
     [Sequence[str]],
     Sequence[Optional[Sequence[Tuple[str, Sequence[str], Sequence[str], Sequence[str]]]]]
 ]
+
+CaCSSQLiteDatabaseArchiveCompoundPatternStandardizationCallable = \
+    CaCSSQLiteDatabaseArchiveCompoundStandardizationCallable
 
 CaCSSQLiteDatabaseArchiveReactionPatternStandardizationCallable = \
     CaCSSQLiteDatabaseArchiveReactionStandardizationCallable

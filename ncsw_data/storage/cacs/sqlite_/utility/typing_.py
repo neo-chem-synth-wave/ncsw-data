@@ -15,21 +15,21 @@ CaCSSQLiteDatabaseArchiveCompoundFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
-CaCSSQLiteDatabaseArchiveCompoundPatternTuple = Tuple[
-    CaCSSQLiteDatabaseModelArchiveCompoundPattern
-]
-
-CaCSSQLiteDatabaseArchiveCompoundPatternFromSourceTuple = Tuple[
-    CaCSSQLiteDatabaseModelArchiveCompoundPattern,
-    CaCSSQLiteDatabaseModelArchiveSource
-]
-
 CaCSSQLiteDatabaseArchiveReactionTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveReaction
 ]
 
 CaCSSQLiteDatabaseArchiveReactionFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveReaction,
+    CaCSSQLiteDatabaseModelArchiveSource
+]
+
+CaCSSQLiteDatabaseArchiveCompoundPatternTuple = Tuple[
+    CaCSSQLiteDatabaseModelArchiveCompoundPattern
+]
+
+CaCSSQLiteDatabaseArchiveCompoundPatternFromSourceTuple = Tuple[
+    CaCSSQLiteDatabaseModelArchiveCompoundPattern,
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
@@ -52,6 +52,10 @@ CaCSSQLiteDatabaseWorkbenchCompoundFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelArchiveSource
 ]
 
+CaCSSQLiteDatabaseWorkbenchReactionTuple = Tuple[
+    CaCSSQLiteDatabaseModelWorkbenchReaction
+]
+
 CaCSSQLiteDatabaseWorkbenchCompoundPatternTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchCompoundPattern
 ]
@@ -60,10 +64,6 @@ CaCSSQLiteDatabaseWorkbenchCompoundPatternFromSourceTuple = Tuple[
     CaCSSQLiteDatabaseModelWorkbenchCompoundPattern,
     CaCSSQLiteDatabaseModelArchiveCompoundPattern,
     CaCSSQLiteDatabaseModelArchiveSource
-]
-
-CaCSSQLiteDatabaseWorkbenchReactionTuple = Tuple[
-    CaCSSQLiteDatabaseModelWorkbenchReaction
 ]
 
 CaCSSQLiteDatabaseWorkbenchReactionFromSourceTuple = Tuple[

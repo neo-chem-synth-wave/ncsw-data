@@ -248,7 +248,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acs = db_session.scalar(
                     statement=ac_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -293,13 +294,192 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acs_from_sources = db_session.scalar(
                     statement=ac_from_source_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
                 for db_chunk_offset in range(0, number_of_acs_from_sources, db_chunk_limit):
                     yield db_session.execute(
                         statement=ac_from_source_select_statement.limit(
+                            limit=db_chunk_limit
+                        ).offset(
+                            offset=db_chunk_offset
+                        )
+                    ).all()
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    ####################################################################################################################
+    # archive_reaction AS ar
+    ####################################################################################################################
+
+    def insert_archive_reactions(
+            self,
+            ar_smiles_strings: Sequence[str],
+            as_name: str,
+            as_version: str,
+            as_file_name: str,
+            db_user: str = "user",
+            db_chunk_limit: int = 10000
+    ) -> None:
+        """
+        Insert the archive chemical reactions into the database.
+
+        :parameter ar_smiles_strings: The SMILES strings of the archive chemical reactions.
+        :parameter as_name: The name of the archive source.
+        :parameter as_version: The version of the archive source.
+        :parameter as_file_name: The file name of the archive source.
+        :parameter db_user: The user of the database.
+        :parameter db_chunk_limit: The chunk limit of the database.
+        """
+
+        try:
+            if self.logger is not None:
+                self.logger.info(
+                    msg="The insertion of the archive chemical reaction data into the database has been started."
+                )
+
+            with self.__db_sessionmaker() as db_session:
+                with db_session.begin_nested():
+                    as_id = CaCSSQLiteDatabaseInsertUtility.insert_and_select_archive_source(
+                        db_session=db_session,
+                        as_name=as_name,
+                        as_version=as_version,
+                        as_file_name=as_file_name,
+                        as_created_by=db_user
+                    )
+
+                tqdm_description = (
+                    "Inserting the archive chemical reaction data into the database (db_chunk_limit = "
+                    "{db_chunk_limit:d})"
+                ).format(
+                    db_chunk_limit=db_chunk_limit
+                )
+
+                for db_chunk_offset in tqdm(
+                    iterable=range(0, len(ar_smiles_strings), db_chunk_limit),
+                    desc=tqdm_description,
+                    total=ceil(len(ar_smiles_strings) / db_chunk_limit),
+                    ncols=len(tqdm_description) + 50
+                ):
+                    ar_smiles_strings_chunk = ar_smiles_strings[
+                        db_chunk_offset: min(db_chunk_offset + db_chunk_limit, len(ar_smiles_strings))
+                    ]
+
+                    if len(ar_smiles_strings_chunk) == 0:
+                        if self.logger is not None:
+                            self.logger.warning(
+                                msg=(
+                                    "The archive chemical reaction data chunk [{data_chunk_start_index:d}, "
+                                    "{data_chunk_end_index:d}) is empty and insertion is skipped."
+                                ).format(
+                                    data_chunk_start_index=db_chunk_offset,
+                                    data_chunk_end_index=min(db_chunk_offset + db_chunk_limit, len(ar_smiles_strings))
+                                )
+                            )
+
+                        continue
+
+                    with db_session.begin_nested():
+                        CaCSSQLiteDatabaseInsertUtility.insert_archive_reactions(
+                            db_session=db_session,
+                            ars=ar_smiles_strings_chunk,
+                            as_id=as_id,
+                            ars_created_by=db_user
+                        )
+
+            if self.logger is not None:
+                self.logger.info(
+                    msg="The insertion of the archive chemical reaction data into the database has been completed."
+                )
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_archive_reactions(
+            self,
+            db_chunk_limit: int = 10000
+    ) -> Generator[Sequence[Row[CaCSSQLiteDatabaseArchiveReactionTuple]], None, None]:
+        """
+        Select the archive chemical reactions from the database.
+
+        :parameter db_chunk_limit: The chunk limit of the database.
+
+        :returns: The generator of the archive chemical reactions from the database.
+        """
+
+        try:
+            with self.__db_sessionmaker() as db_session:
+                ar_select_statement = CaCSSQLiteDatabaseSelectUtility.construct_archive_reaction_select_statement()
+
+                number_of_ars = db_session.scalar(
+                    statement=ar_select_statement.with_only_columns(
+                        count(),
+                        maintain_column_froms=True
+                    )
+                )
+
+                for db_chunk_offset in range(0, number_of_ars, db_chunk_limit):
+                    yield db_session.execute(
+                        statement=ar_select_statement.limit(
+                            limit=db_chunk_limit
+                        ).offset(
+                            offset=db_chunk_offset
+                        )
+                    ).all()
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_archive_reactions_from_sources(
+            self,
+            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]],
+            db_chunk_limit: int = 10000
+    ) -> Generator[Sequence[Row[CaCSSQLiteDatabaseArchiveReactionFromSourceTuple]], None, None]:
+        """
+        Select the archive chemical reactions from sources in the database.
+
+        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
+            which the archive chemical reactions should be retrieved.
+        :parameter db_chunk_limit: The chunk limit of the database.
+
+        :returns: The generator of the archive chemical reactions from sources in the database.
+        """
+
+        try:
+            with self.__db_sessionmaker() as db_session:
+                ar_from_source_select_statement = \
+                    CaCSSQLiteDatabaseSelectUtility.construct_archive_reaction_from_source_select_statement(
+                        as_names_versions_and_file_names=as_names_versions_and_file_names
+                    )
+
+                number_of_ars_from_sources = db_session.scalar(
+                    statement=ar_from_source_select_statement.with_only_columns(
+                        count(),
+                        maintain_column_froms=True
+                    )
+                )
+
+                for db_chunk_offset in range(0, number_of_ars_from_sources, db_chunk_limit):
+                    yield db_session.execute(
+                        statement=ar_from_source_select_statement.limit(
                             limit=db_chunk_limit
                         ).offset(
                             offset=db_chunk_offset
@@ -431,7 +611,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acps = db_session.scalar(
                     statement=acp_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -476,189 +657,14 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_acps_from_sources = db_session.scalar(
                     statement=acp_from_source_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
                 for db_chunk_offset in range(0, number_of_acps_from_sources, db_chunk_limit):
                     yield db_session.execute(
                         statement=acp_from_source_select_statement.limit(
-                            limit=db_chunk_limit
-                        ).offset(
-                            offset=db_chunk_offset
-                        )
-                    ).all()
-
-        except Exception as exception_handle:
-            if self.logger is not None:
-                self.logger.error(
-                    msg=exception_handle
-                )
-
-            raise
-
-    ####################################################################################################################
-    # archive_reaction AS ar
-    ####################################################################################################################
-
-    def insert_archive_reactions(
-            self,
-            ar_smiles_strings: Sequence[str],
-            as_name: str,
-            as_version: str,
-            as_file_name: str,
-            db_user: str = "user",
-            db_chunk_limit: int = 10000
-    ) -> None:
-        """
-        Insert the archive chemical reactions into the database.
-
-        :parameter ar_smiles_strings: The SMILES strings of the archive chemical reactions.
-        :parameter as_name: The name of the archive source.
-        :parameter as_version: The version of the archive source.
-        :parameter as_file_name: The file name of the archive source.
-        :parameter db_user: The user of the database.
-        :parameter db_chunk_limit: The chunk limit of the database.
-        """
-
-        try:
-            if self.logger is not None:
-                self.logger.info(
-                    msg="The insertion of the archive chemical reaction data into the database has been started."
-                )
-
-            with self.__db_sessionmaker() as db_session:
-                with db_session.begin_nested():
-                    as_id = CaCSSQLiteDatabaseInsertUtility.insert_and_select_archive_source(
-                        db_session=db_session,
-                        as_name=as_name,
-                        as_version=as_version,
-                        as_file_name=as_file_name,
-                        as_created_by=db_user
-                    )
-
-                tqdm_description = (
-                    "Inserting the archive chemical reaction data into the database (db_chunk_limit = "
-                    "{db_chunk_limit:d})"
-                ).format(
-                    db_chunk_limit=db_chunk_limit
-                )
-
-                for db_chunk_offset in tqdm(
-                    iterable=range(0, len(ar_smiles_strings), db_chunk_limit),
-                    desc=tqdm_description,
-                    total=ceil(len(ar_smiles_strings) / db_chunk_limit),
-                    ncols=len(tqdm_description) + 50
-                ):
-                    ar_smiles_strings_chunk = ar_smiles_strings[
-                        db_chunk_offset: min(db_chunk_offset + db_chunk_limit, len(ar_smiles_strings))
-                    ]
-
-                    if len(ar_smiles_strings_chunk) == 0:
-                        if self.logger is not None:
-                            self.logger.warning(
-                                msg=(
-                                    "The archive chemical reaction data chunk [{data_chunk_start_index:d}, "
-                                    "{data_chunk_end_index:d}) is empty and insertion is skipped."
-                                ).format(
-                                    data_chunk_start_index=db_chunk_offset,
-                                    data_chunk_end_index=min(db_chunk_offset + db_chunk_limit, len(ar_smiles_strings))
-                                )
-                            )
-
-                        continue
-
-                    with db_session.begin_nested():
-                        CaCSSQLiteDatabaseInsertUtility.insert_archive_reactions(
-                            db_session=db_session,
-                            ars=ar_smiles_strings_chunk,
-                            as_id=as_id,
-                            ars_created_by=db_user
-                        )
-
-            if self.logger is not None:
-                self.logger.info(
-                    msg="The insertion of the archive chemical reaction data into the database has been completed."
-                )
-
-        except Exception as exception_handle:
-            if self.logger is not None:
-                self.logger.error(
-                    msg=exception_handle
-                )
-
-            raise
-
-    def select_archive_reactions(
-            self,
-            db_chunk_limit: int = 10000
-    ) -> Generator[Sequence[Row[CaCSSQLiteDatabaseArchiveReactionTuple]], None, None]:
-        """
-        Select the archive chemical reactions from the database.
-
-        :parameter db_chunk_limit: The chunk limit of the database.
-
-        :returns: The generator of the archive chemical reactions from the database.
-        """
-
-        try:
-            with self.__db_sessionmaker() as db_session:
-                ar_select_statement = CaCSSQLiteDatabaseSelectUtility.construct_archive_reaction_select_statement()
-
-                number_of_ars = db_session.scalar(
-                    statement=ar_select_statement.with_only_columns(
-                        count()
-                    )
-                )
-
-                for db_chunk_offset in range(0, number_of_ars, db_chunk_limit):
-                    yield db_session.execute(
-                        statement=ar_select_statement.limit(
-                            limit=db_chunk_limit
-                        ).offset(
-                            offset=db_chunk_offset
-                        )
-                    ).all()
-
-        except Exception as exception_handle:
-            if self.logger is not None:
-                self.logger.error(
-                    msg=exception_handle
-                )
-
-            raise
-
-    def select_archive_reactions_from_sources(
-            self,
-            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]],
-            db_chunk_limit: int = 10000
-    ) -> Generator[Sequence[Row[CaCSSQLiteDatabaseArchiveReactionFromSourceTuple]], None, None]:
-        """
-        Select the archive chemical reactions from sources in the database.
-
-        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
-            which the archive chemical reactions should be retrieved.
-        :parameter db_chunk_limit: The chunk limit of the database.
-
-        :returns: The generator of the archive chemical reactions from sources in the database.
-        """
-
-        try:
-            with self.__db_sessionmaker() as db_session:
-                ar_from_source_select_statement = \
-                    CaCSSQLiteDatabaseSelectUtility.construct_archive_reaction_from_source_select_statement(
-                        as_names_versions_and_file_names=as_names_versions_and_file_names
-                    )
-
-                number_of_ars_from_sources = db_session.scalar(
-                    statement=ar_from_source_select_statement.with_only_columns(
-                        count()
-                    )
-                )
-
-                for db_chunk_offset in range(0, number_of_ars_from_sources, db_chunk_limit):
-                    yield db_session.execute(
-                        statement=ar_from_source_select_statement.limit(
                             limit=db_chunk_limit
                         ).offset(
                             offset=db_chunk_offset
@@ -790,7 +796,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_arps = db_session.scalar(
                     statement=arp_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -835,7 +842,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_arps_from_sources = db_session.scalar(
                     statement=arp_from_source_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -1005,7 +1013,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wcs = db_session.scalar(
                     statement=wc_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -1054,7 +1063,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wcs_from_sources = db_session.scalar(
                     statement=wc_from_source_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -1064,6 +1074,242 @@ class CaCSSQLiteDatabase(DataStorageBase):
                             limit=db_chunk_limit
                         ).offset(
                             offset=database_chunk_offset
+                        )
+                    ).all()
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    ####################################################################################################################
+    # workbench_reaction AS wr
+    ####################################################################################################################
+
+    def migrate_archive_to_workbench_reactions(
+            self,
+            ar_standardization_function: CaCSSQLiteDatabaseArchiveReactionStandardizationCallable,
+            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]],
+            db_user: str = "user",
+            db_chunk_limit: int = 10000
+    ) -> None:
+        """
+        Migrate the chemical reactions from the archive to the workbench tables of the database.
+
+        :parameter ar_standardization_function: The standardization function of the archive chemical reactions.
+        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
+            which the archive chemical reactions should be retrieved.
+        :parameter db_user: The user of the database.
+        :parameter db_chunk_limit: The chunk limit of the database.
+        """
+
+        try:
+            if self.logger is not None:
+                self.logger.info(
+                    msg=(
+                        "The migration of the chemical reaction data from the archive to the workbench tables of the "
+                        "database has been started."
+                    )
+                )
+
+            with self.__db_sessionmaker() as db_session:
+                ar_from_source_select_statement = \
+                    CaCSSQLiteDatabaseSelectUtility.construct_archive_reaction_from_source_select_statement(
+                        as_names_versions_and_file_names=as_names_versions_and_file_names
+                    )
+
+                number_of_ars_from_sources = db_session.scalar(
+                    statement=select(
+                        count()
+                    ).select_from(
+                        ar_from_source_select_statement.with_only_columns(
+                            CaCSSQLiteDatabaseModelArchiveReaction.id,
+                            CaCSSQLiteDatabaseModelArchiveReaction.smiles
+                        ).distinct().subquery()
+                    )
+                )
+
+                tqdm_description = (
+                    "Migrating the chemical reaction data from the archive to the workbench tables of the database"
+                )
+
+                for db_chunk_offset in tqdm(
+                    iterable=range(0, number_of_ars_from_sources, db_chunk_limit),
+                    desc=tqdm_description,
+                    total=ceil(number_of_ars_from_sources / db_chunk_limit),
+                    ncols=len(tqdm_description) + 50
+                ):
+                    ars = db_session.execute(
+                        statement=ar_from_source_select_statement.with_only_columns(
+                            CaCSSQLiteDatabaseModelArchiveReaction.id,
+                            CaCSSQLiteDatabaseModelArchiveReaction.smiles
+                        ).distinct().limit(
+                            limit=db_chunk_limit
+                        ).offset(
+                            offset=db_chunk_offset
+                        )
+                    ).all()
+
+                    standardized_ars = ar_standardization_function([
+                        ar.smiles
+                        for ar in ars
+                    ])
+
+                    wrs = list()
+
+                    for ar_index, ar in enumerate(ars):
+                        if standardized_ars[ar_index] is not None:
+                            for (
+                                wr_smiles,
+                                wrrc_smiles_strings,
+                                wrsc_smiles_strings,
+                                wrpc_smiles_strings,
+                            ) in standardized_ars[ar_index]:
+                                wrs.append((
+                                    ar.id,
+                                    wr_smiles,
+                                    wrrc_smiles_strings,
+                                    wrsc_smiles_strings,
+                                    wrpc_smiles_strings,
+                                ))
+
+                    if len(wrs) == 0:
+                        if self.logger is not None:
+                            self.logger.warning(
+                                msg=(
+                                    "The workbench chemical reaction data chunk [{data_chunk_start_index:d},"
+                                    "{data_chunk_end_index:d}) is empty and insertion is skipped."
+                                ).format(
+                                    data_chunk_start_index=db_chunk_offset,
+                                    data_chunk_end_index=min(
+                                        db_chunk_offset + db_chunk_limit,
+                                        number_of_ars_from_sources
+                                    )
+                                )
+                            )
+
+                        continue
+
+                    with db_session.begin_nested():
+                        CaCSSQLiteDatabaseInsertUtility.insert_workbench_reactions(
+                            db_session=db_session,
+                            wrs=wrs,
+                            wrs_created_by=db_user
+                        )
+
+            if self.logger is not None:
+                self.logger.info(
+                    msg=(
+                        "The migration of the chemical reaction data from the archive to the workbench tables of the "
+                        "database has been completed."
+                    )
+                )
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_workbench_reactions(
+            self,
+            wrrc_smiles_strings: Optional[Iterable[str]],
+            wrsc_smiles_strings: Optional[Iterable[str]],
+            wrpc_smiles_strings: Optional[Iterable[str]],
+            db_chunk_limit: int = 10000
+    ) -> Generator[Sequence[Row[CaCSSQLiteDatabaseWorkbenchReactionTuple]], None, None]:
+        """
+        Select the workbench chemical reactions from the database.
+
+        :parameter wrrc_smiles_strings: The SMILES strings of the workbench chemical reaction reactant compounds.
+        :parameter wrsc_smiles_strings: The SMILES strings of the workbench chemical reaction spectator compounds.
+        :parameter wrpc_smiles_strings: The SMILES strings of the workbench chemical reaction product compounds.
+        :parameter db_chunk_limit: The chunk limit of the database.
+
+        :returns: The generator of the workbench chemical reactions from the database.
+        """
+
+        try:
+            with self.__db_sessionmaker() as db_session:
+                wr_select_statement = CaCSSQLiteDatabaseSelectUtility.construct_workbench_reaction_select_statement(
+                    wrrc_smiles_strings=wrrc_smiles_strings,
+                    wrsc_smiles_strings=wrsc_smiles_strings,
+                    wrpc_smiles_strings=wrpc_smiles_strings,
+                )
+
+                number_of_wrs = db_session.scalar(
+                    statement=wr_select_statement.with_only_columns(
+                        count(),
+                        maintain_column_froms=True
+                    )
+                )
+
+                for db_chunk_offset in range(0, number_of_wrs, db_chunk_limit):
+                    yield db_session.execute(
+                        statement=wr_select_statement.limit(
+                            limit=db_chunk_limit
+                        ).offset(
+                            offset=db_chunk_offset
+                        )
+                    ).all()
+
+        except Exception as exception_handle:
+            if self.logger is not None:
+                self.logger.error(
+                    msg=exception_handle
+                )
+
+            raise
+
+    def select_workbench_reactions_from_sources(
+            self,
+            wrrc_smiles_strings: Optional[Iterable[str]],
+            wrsc_smiles_strings: Optional[Iterable[str]],
+            wrpc_smiles_strings: Optional[Iterable[str]],
+            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]],
+            db_chunk_limit: int = 10000
+    ) -> Generator[Sequence[Row[CaCSSQLiteDatabaseWorkbenchReactionFromSourceTuple]], None, None]:
+        """
+        Select the workbench chemical reactions from sources of the database.
+
+        :parameter wrrc_smiles_strings: The SMILES strings of the workbench chemical reaction reactant compounds.
+        :parameter wrsc_smiles_strings: The SMILES strings of the workbench chemical reaction spectator compounds.
+        :parameter wrpc_smiles_strings: The SMILES strings of the workbench chemical reaction product compounds.
+        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
+            which the workbench chemical reactions should be retrieved.
+        :parameter db_chunk_limit: The chunk limit of the database.
+
+        :returns: The generator of the workbench chemical reactions from sources of the database.
+        """
+
+        try:
+            with self.__db_sessionmaker() as db_session:
+                wr_from_source_select_statement = \
+                    CaCSSQLiteDatabaseSelectUtility.construct_workbench_reaction_from_source_select_statement(
+                        wrrc_smiles_strings=wrrc_smiles_strings,
+                        wrsc_smiles_strings=wrsc_smiles_strings,
+                        wrpc_smiles_strings=wrpc_smiles_strings,
+                        as_names_versions_and_file_names=as_names_versions_and_file_names
+                    )
+
+                number_of_wrs_from_sources = db_session.scalar(
+                    statement=wr_from_source_select_statement.with_only_columns(
+                        count(),
+                        maintain_column_froms=True
+                    )
+                )
+
+                for db_chunk_offset in range(0, number_of_wrs_from_sources, db_chunk_limit):
+                    yield db_session.execute(
+                        statement=wr_from_source_select_statement.limit(
+                            limit=db_chunk_limit
+                        ).offset(
+                            offset=db_chunk_offset
                         )
                     ).all()
 
@@ -1217,7 +1463,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wcps = db_session.scalar(
                     statement=wcp_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -1262,243 +1509,14 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wcps_from_sources = db_session.scalar(
                     statement=wcp_from_source_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
                 for db_chunk_offset in range(0, number_of_wcps_from_sources, db_chunk_limit):
                     yield db_session.execute(
                         statement=wcp_from_source_select_statement.limit(
-                            limit=db_chunk_limit
-                        ).offset(
-                            offset=db_chunk_offset
-                        )
-                    ).all()
-
-        except Exception as exception_handle:
-            if self.logger is not None:
-                self.logger.error(
-                    msg=exception_handle
-                )
-
-            raise
-
-    ####################################################################################################################
-    # workbench_reaction AS wr
-    ####################################################################################################################
-
-    def migrate_archive_to_workbench_reactions(
-            self,
-            ar_standardization_function: CaCSSQLiteDatabaseArchiveReactionStandardizationCallable,
-            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]],
-            db_user: str = "user",
-            db_chunk_limit: int = 10000
-    ) -> None:
-        """
-        Migrate the chemical reactions from the archive to the workbench tables of the database.
-
-        :parameter ar_standardization_function: The standardization function of the archive chemical reactions.
-        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
-            which the archive chemical reactions should be retrieved.
-        :parameter db_user: The user of the database.
-        :parameter db_chunk_limit: The chunk limit of the database.
-        """
-
-        try:
-            if self.logger is not None:
-                self.logger.info(
-                    msg=(
-                        "The migration of the chemical reaction data from the archive to the workbench tables of the "
-                        "database has been started."
-                    )
-                )
-
-            with self.__db_sessionmaker() as db_session:
-                ar_from_source_select_statement = \
-                    CaCSSQLiteDatabaseSelectUtility.construct_archive_reaction_from_source_select_statement(
-                        as_names_versions_and_file_names=as_names_versions_and_file_names
-                    )
-
-                number_of_ars_from_sources = db_session.scalar(
-                    statement=select(
-                        count()
-                    ).select_from(
-                        ar_from_source_select_statement.with_only_columns(
-                            CaCSSQLiteDatabaseModelArchiveReaction.id,
-                            CaCSSQLiteDatabaseModelArchiveReaction.smiles
-                        ).distinct().subquery()
-                    )
-                )
-
-                tqdm_description = (
-                    "Migrating the chemical reaction data from the archive to the workbench tables of the database"
-                )
-
-                for db_chunk_offset in tqdm(
-                    iterable=range(0, number_of_ars_from_sources, db_chunk_limit),
-                    desc=tqdm_description,
-                    total=ceil(number_of_ars_from_sources / db_chunk_limit),
-                    ncols=len(tqdm_description) + 50
-                ):
-                    ars = db_session.execute(
-                        statement=ar_from_source_select_statement.with_only_columns(
-                            CaCSSQLiteDatabaseModelArchiveReaction.id,
-                            CaCSSQLiteDatabaseModelArchiveReaction.smiles
-                        ).distinct().limit(
-                            limit=db_chunk_limit
-                        ).offset(
-                            offset=db_chunk_offset
-                        )
-                    ).all()
-
-                    standardized_ars = ar_standardization_function([
-                        ar.smiles
-                        for ar in ars
-                    ])
-
-                    wrs = list()
-
-                    for ar_index, ar in enumerate(ars):
-                        if standardized_ars[ar_index] is not None:
-                            for wr_smiles, wrrc_smiles_strings, wrsc_smiles_strings, \
-                                    wrpc_smiles_strings in standardized_ars[ar_index]:
-                                wrs.append((
-                                    ar.id,
-                                    wr_smiles,
-                                    wrrc_smiles_strings,
-                                    wrsc_smiles_strings,
-                                    wrpc_smiles_strings,
-                                ))
-
-                    if len(wrs) == 0:
-                        if self.logger is not None:
-                            self.logger.warning(
-                                msg=(
-                                    "The workbench chemical reaction data chunk [{data_chunk_start_index:d},"
-                                    "{data_chunk_end_index:d}) is empty and insertion is skipped."
-                                ).format(
-                                    data_chunk_start_index=db_chunk_offset,
-                                    data_chunk_end_index=min(
-                                        db_chunk_offset + db_chunk_limit,
-                                        number_of_ars_from_sources
-                                    )
-                                )
-                            )
-
-                        continue
-
-                    with db_session.begin_nested():
-                        CaCSSQLiteDatabaseInsertUtility.insert_workbench_reactions(
-                            db_session=db_session,
-                            wrs=wrs,
-                            wrs_created_by=db_user
-                        )
-
-            if self.logger is not None:
-                self.logger.info(
-                    msg=(
-                        "The migration of the chemical reaction data from the archive to the workbench tables of the "
-                        "database has been completed."
-                    )
-                )
-
-        except Exception as exception_handle:
-            if self.logger is not None:
-                self.logger.error(
-                    msg=exception_handle
-                )
-
-            raise
-
-    def select_workbench_reactions(
-            self,
-            wrrc_smiles_strings: Optional[Iterable[str]],
-            wrsc_smiles_strings: Optional[Iterable[str]],
-            wrpc_smiles_strings: Optional[Iterable[str]],
-            db_chunk_limit: int = 10000
-    ) -> Generator[Sequence[Row[CaCSSQLiteDatabaseWorkbenchReactionTuple]], None, None]:
-        """
-        Select the workbench chemical reactions from the database.
-
-        :parameter wrrc_smiles_strings: The SMILES strings of the workbench chemical reaction reactant compounds.
-        :parameter wrsc_smiles_strings: The SMILES strings of the workbench chemical reaction spectator compounds.
-        :parameter wrpc_smiles_strings: The SMILES strings of the workbench chemical reaction product compounds.
-        :parameter db_chunk_limit: The chunk limit of the database.
-
-        :returns: The generator of the workbench chemical reactions from the database.
-        """
-
-        try:
-            with self.__db_sessionmaker() as db_session:
-                wr_select_statement = CaCSSQLiteDatabaseSelectUtility.construct_workbench_reaction_select_statement(
-                    wrrc_smiles_strings=wrrc_smiles_strings,
-                    wrsc_smiles_strings=wrsc_smiles_strings,
-                    wrpc_smiles_strings=wrpc_smiles_strings,
-                )
-
-                number_of_wrs = db_session.scalar(
-                    statement=wr_select_statement.with_only_columns(
-                        count()
-                    )
-                )
-
-                for db_chunk_offset in range(0, number_of_wrs, db_chunk_limit):
-                    yield db_session.execute(
-                        statement=wr_select_statement.limit(
-                            limit=db_chunk_limit
-                        ).offset(
-                            offset=db_chunk_offset
-                        )
-                    ).all()
-
-        except Exception as exception_handle:
-            if self.logger is not None:
-                self.logger.error(
-                    msg=exception_handle
-                )
-
-            raise
-
-    def select_workbench_reactions_from_sources(
-            self,
-            wrrc_smiles_strings: Optional[Iterable[str]],
-            wrsc_smiles_strings: Optional[Iterable[str]],
-            wrpc_smiles_strings: Optional[Iterable[str]],
-            as_names_versions_and_file_names: Optional[Iterable[Tuple[str, str, str]]],
-            db_chunk_limit: int = 10000
-    ) -> Generator[Sequence[Row[CaCSSQLiteDatabaseWorkbenchReactionFromSourceTuple]], None, None]:
-        """
-        Select the workbench chemical reactions from sources of the database.
-
-        :parameter wrrc_smiles_strings: The SMILES strings of the workbench chemical reaction reactant compounds.
-        :parameter wrsc_smiles_strings: The SMILES strings of the workbench chemical reaction spectator compounds.
-        :parameter wrpc_smiles_strings: The SMILES strings of the workbench chemical reaction product compounds.
-        :parameter as_names_versions_and_file_names: The names, versions, and file names of the archive sources from
-            which the workbench chemical reactions should be retrieved.
-        :parameter db_chunk_limit: The chunk limit of the database.
-
-        :returns: The generator of the workbench chemical reactions from sources of the database.
-        """
-
-        try:
-            with self.__db_sessionmaker() as db_session:
-                wr_from_source_select_statement = \
-                    CaCSSQLiteDatabaseSelectUtility.construct_workbench_reaction_from_source_select_statement(
-                        wrrc_smiles_strings=wrrc_smiles_strings,
-                        wrsc_smiles_strings=wrsc_smiles_strings,
-                        wrpc_smiles_strings=wrpc_smiles_strings,
-                        as_names_versions_and_file_names=as_names_versions_and_file_names
-                    )
-
-                number_of_wrs_from_sources = db_session.scalar(
-                    statement=wr_from_source_select_statement.with_only_columns(
-                        count()
-                    )
-                )
-
-                for db_chunk_offset in range(0, number_of_wrs_from_sources, db_chunk_limit):
-                    yield db_session.execute(
-                        statement=wr_from_source_select_statement.limit(
                             limit=db_chunk_limit
                         ).offset(
                             offset=db_chunk_offset
@@ -1591,8 +1609,12 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                     for arp_index, arp in enumerate(arps):
                         if standardized_arps[arp_index] is not None:
-                            for wrp_smarts, wrrcp_smarts_strings, wrscp_smarts_strings, \
-                                    wrpcp_smarts_strings in standardized_arps[arp_index]:
+                            for (
+                                wrp_smarts,
+                                wrrcp_smarts_strings,
+                                wrscp_smarts_strings,
+                                wrpcp_smarts_strings,
+                            ) in standardized_arps[arp_index]:
                                 wrps.append((
                                     arp.id,
                                     wrp_smarts,
@@ -1673,7 +1695,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wrps = db_session.scalar(
                     statement=wrp_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -1730,7 +1753,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wrps_from_sources = db_session.scalar(
                     statement=wrp_from_source_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -1787,7 +1811,8 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                 number_of_wrs = db_session.scalar(
                     statement=wr_select_statement.with_only_columns(
-                        count()
+                        count(),
+                        maintain_column_froms=True
                     )
                 )
 
@@ -1824,20 +1849,19 @@ class CaCSSQLiteDatabase(DataStorageBase):
 
                     for wr_index, wr in enumerate(wrs):
                         if extracted_wrps[wr_index] is not None:
-                            (
+                            for (
                                 wrp_smarts,
                                 wrrc_smiles_strings_and_wrrcp_smarts_strings,
                                 wrsc_smiles_strings_and_wrscp_smarts_strings,
                                 wrpc_smiles_strings_and_wrpcp_smarts_strings,
-                            ) = extracted_wrps[wr_index]
-
-                            wrtps.append((
-                                wr.id,
-                                wrp_smarts,
-                                wrrc_smiles_strings_and_wrrcp_smarts_strings,
-                                wrsc_smiles_strings_and_wrscp_smarts_strings,
-                                wrpc_smiles_strings_and_wrpcp_smarts_strings,
-                            ))
+                            ) in extracted_wrps[wr_index]:
+                                wrtps.append((
+                                    wr.id,
+                                    wrp_smarts,
+                                    wrrc_smiles_strings_and_wrrcp_smarts_strings,
+                                    wrsc_smiles_strings_and_wrscp_smarts_strings,
+                                    wrpc_smiles_strings_and_wrpcp_smarts_strings,
+                                ))
 
                     if len(wrtps) == 0:
                         if self.logger is not None:
