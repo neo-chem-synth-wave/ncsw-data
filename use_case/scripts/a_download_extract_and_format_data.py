@@ -1,4 +1,4 @@
-""" The ``use_case.scripts`` package ``download_extract_and_format_data`` script. """
+""" The ``use_case.scripts`` directory ``a_download_extract_and_format_data`` script. """
 
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
@@ -31,14 +31,14 @@ def get_script_arguments() -> Namespace:
             "reaction",
             "reaction_pattern",
         ],
-        help="The indicator of the data source category."
+        help="The category of the data source."
     )
 
     argument_parser.add_argument(
-        "-gdsn",
-        "--get_data_source_name",
+        "-gdsni",
+        "--get_data_source_name_information",
         action="store_true",
-        help="The indicator of whether to get the data source name."
+        help="The indicator of whether to get the data source name information."
     )
 
     argument_parser.add_argument(
@@ -56,28 +56,28 @@ def get_script_arguments() -> Namespace:
             "uspto",
             "zinc",
         ],
-        help="The indicator of the data source name."
+        help="The name of the data source."
     )
 
     argument_parser.add_argument(
-        "-gdsv",
-        "--get_data_source_version",
+        "-gdsvi",
+        "--get_data_source_version_information",
         action="store_true",
-        help="The indicator of whether to get the data source version."
+        help="The indicator of whether to get the data source version information."
     )
 
     argument_parser.add_argument(
         "-dsv",
         "--data_source_version",
         type=str,
-        help="The indicator of the data source version."
+        help="The version of the data source."
     )
 
     argument_parser.add_argument(
         "-odp",
         "--output_directory_path",
         type=str,
-        help="The path to the output directory where the data should be formatted."
+        help="The path to the output directory where the data should be downloaded, extracted, and formatted."
     )
 
     argument_parser.add_argument(
@@ -160,11 +160,11 @@ if __name__ == "__main__":
             )
         )
 
-    if script_arguments.get_data_source_name:
+    if script_arguments.get_data_source_name_information:
         print(script_arguments.data_source_category)
         print(data_source.get_names_of_supported_data_sources())
 
-    elif script_arguments.get_data_source_version:
+    elif script_arguments.get_data_source_version_information:
         print(script_arguments.data_source_category)
         print(script_arguments.data_source_name)
         print(data_source.get_supported_versions(

@@ -9,6 +9,7 @@ dependencies:
   - py7zr
   - rdkit
   - requests
+  - seaborn
   - tqdm
   - pip:
       - ord-schema
