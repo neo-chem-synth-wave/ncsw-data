@@ -1,4 +1,4 @@
-""" The ``use_case.scripts`` directory ``insert_archive_data`` script. """
+""" The ``use_case.scripts`` directory ``b_insert_archive_data`` script. """
 
 from argparse import ArgumentParser, Namespace
 from logging import Formatter, Logger, StreamHandler, getLogger
@@ -55,7 +55,7 @@ def get_script_arguments() -> Namespace:
             "reaction",
             "reaction_pattern",
         ],
-        help="The indicator of the data source category."
+        help="The category of the data source."
     )
 
     argument_parser.add_argument(
@@ -75,6 +75,7 @@ def get_script_arguments() -> Namespace:
     argument_parser.add_argument(
         "-du",
         "--database_user",
+        default="admin",
         type=str,
         help="The user of the database."
     )
