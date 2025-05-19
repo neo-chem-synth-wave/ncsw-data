@@ -1,13 +1,17 @@
-""" The ``use_case.scripts`` directory ``update_workbench_data`` script. """
+""" The ``use_case.scripts`` directory ``d_update_workbench_data`` script. """
 
 from argparse import ArgumentParser, Namespace
 from functools import partial
 from logging import Formatter, Logger, StreamHandler, getLogger
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Process, Queue, cpu_count
 from typing import Iterable, List, Optional, Tuple
 
-from ncsw_chemistry.compound.utility import CompoundFormattingUtility, CompoundStandardizationUtility
-from ncsw_chemistry.reaction.utility import ReactionCompoundUtility, ReactionReactivityUtility
+from multiprocessing.dummy import Pool
+
+from rdchiral.main import rdchiralReactants, rdchiralReaction, rdchiralRun
+from rdchiral.template_extractor import extract_from_reaction
+
+from rdkit.Chem import MolFromSmarts, MolFromSmiles, MolToSmarts, MolToSmiles, SanitizeMol
 
 from ncsw_data.storage.cacs.sqlite_ import CaCSSQLiteDatabase
 
@@ -17,58 +21,134 @@ from ncsw_data.storage.cacs.sqlite_ import CaCSSQLiteDatabase
 ########################################################################################################################
 
 
-def process_reaction_compound_smiles(
-        compound_smiles: str
+def extract_compound_smiles_or_smarts(
+        reaction_smiles_or_smarts: str
+) -> Tuple[List[str], List[str], List[str]]:
+    """
+    Extract the compound SMILES or SMARTS strings from a chemical reaction.
+
+    :parameter reaction_smiles_or_smarts: The SMILES or SMARTS string of the chemical reaction.
+
+    :returns: The extracted compound SMILES or SMARTS strings from the chemical reaction.
+    """
+
+    compound_smiles_or_smarts_strings = (list(), list(), list(), )
+
+    for compounds_index, compounds_smiles_or_smarts in enumerate(reaction_smiles_or_smarts.split(
+        sep=">"
+    )):
+        if compounds_smiles_or_smarts != "":
+            for compound_smiles_or_smarts in compounds_smiles_or_smarts.split()[0].split(
+                sep="."
+            ):
+                if compound_smiles_or_smarts != "":
+                    compound_smiles_or_smarts_strings[compounds_index].append(
+                        compound_smiles_or_smarts
+                    )
+
+    return compound_smiles_or_smarts_strings
+
+
+def process_compound_smiles(
+        compound_smiles: str,
+        logger: Optional[Logger] = None
 ) -> Optional[str]:
     """
-    Process the SMILES string of a chemical reaction compound.
+    Process the SMILES string of a chemical compound.
 
-    :parameter compound_smiles: The SMILES string of the chemical reaction compound.
+    :parameter compound_smiles: The SMILES string of the chemical compound.
+    :parameter logger: The logger. The value `None` indicates that the logger should not be utilized.
 
-    :returns: The processed SMILES string of the chemical reaction compound.
+    :returns: The processed SMILES string of the chemical compound.
     """
 
-    reaction_compound_mol = CompoundFormattingUtility.convert_compound_smiles_to_mol(
-        compound_smiles=compound_smiles,
-        remove_compound_atom_map_numbers=True,
-        sanitize=False
-    )
+    try:
+        compound_mol = MolFromSmiles(
+            SMILES=compound_smiles,
+            sanitize=False
+        )
 
-    CompoundStandardizationUtility.sanitize_compound(
-        compound_mol=reaction_compound_mol,
-        deep_copy=False
-    )
+        for atom in compound_mol.GetAtoms():
+            atom.ClearProp(
+                key="molAtomMapNumber"
+            )
 
-    return CompoundFormattingUtility.convert_compound_mol_to_smiles(
-        compound_mol=reaction_compound_mol
-    )
+        SanitizeMol(
+            compound_mol
+        )
+
+        return MolToSmiles(
+            mol=compound_mol
+        )
+
+    except Exception as exception_handle:
+        if logger is not None:
+            logger.error(
+                msg=(
+                    "The processing of the chemical compound SMILES string '{compound_smiles:s}' has been unsuccessful."
+                ).format(
+                    compound_smiles=compound_smiles
+                )
+            )
+
+            logger.debug(
+                msg=exception_handle,
+                exc_info=True
+            )
+
+        return None
 
 
-def process_reaction_compound_pattern_smarts(
-        compound_pattern_smarts: str
+def process_compound_pattern_smarts(
+        compound_pattern_smarts: str,
+        logger: Optional[Logger] = None
 ) -> Optional[str]:
     """
-    Process the SMARTS string of a chemical reaction compound pattern.
+    Process the SMARTS string of a chemical compound pattern.
 
-    :parameter compound_pattern_smarts: The SMARTS string of the chemical reaction compound pattern.
+    :parameter compound_pattern_smarts: The SMARTS string of the chemical compound pattern.
+    :parameter logger: The logger. The value `None` indicates that the logger should not be utilized.
 
-    :returns: The processed SMARTS string of the chemical reaction compound pattern.
+    :returns: The processed SMARTS string of the chemical compound pattern.
     """
 
-    reaction_compound_pattern_mol = CompoundFormattingUtility.convert_compound_smarts_to_mol(
-        compound_smarts=compound_pattern_smarts,
-        remove_compound_atom_map_numbers=True
-    )
+    try:
+        compound_pattern_mol = MolFromSmarts(
+            SMARTS=compound_pattern_smarts
+        )
 
-    return CompoundFormattingUtility.convert_compound_mol_to_smarts(
-        compound_mol=reaction_compound_pattern_mol
-    )
+        for atom in compound_pattern_mol.GetAtoms():
+            atom.ClearProp(
+                key="molAtomMapNumber"
+            )
+
+        return MolToSmarts(
+            mol=compound_pattern_mol
+        )
+
+    except Exception as exception_handle:
+        if logger is not None:
+            logger.error(
+                msg=(
+                    "The processing of the chemical compound pattern SMARTS string '{compound_pattern_smarts:s}' has "
+                    "been unsuccessful."
+                ).format(
+                    compound_pattern_smarts=compound_pattern_smarts
+                )
+            )
+
+            logger.debug(
+                msg=exception_handle,
+                exc_info=True
+            )
+
+        return None
 
 
 def extract_reaction_transformation_pattern_smarts(
         mapped_reaction_smiles: str,
         logger: Optional[Logger] = None
-) -> Optional[Tuple[str, List[str], List[str], List[str]]]:
+) -> Optional[List[Tuple[str, List[str], List[str], List[str]]]]:
     """
     Extract the transformation pattern SMARTS string from a chemical reaction SMILES string.
 
@@ -83,14 +163,15 @@ def extract_reaction_transformation_pattern_smarts(
             reaction_reactant_compound_smiles_strings,
             _,
             reaction_product_compound_smiles_strings,
-        ) = ReactionCompoundUtility.extract_compound_smiles_or_smarts(
+        ) = extract_compound_smiles_or_smarts(
             reaction_smiles_or_smarts=mapped_reaction_smiles
         )
 
-        reaction_transformation_pattern_smarts = ReactionReactivityUtility.extract_retro_template_using_rdchiral(
-            mapped_reactant_compound_smiles_strings=reaction_reactant_compound_smiles_strings,
-            mapped_product_compound_smiles=reaction_product_compound_smiles_strings[0]
-        )
+        reaction_transformation_pattern_smarts = extract_from_reaction({
+            "_id": None,
+            "reactants": ".".join(reaction_reactant_compound_smiles_strings),
+            "products": reaction_product_compound_smiles_strings[0],
+        }).get("reaction_smarts", None)
 
         if reaction_transformation_pattern_smarts is None:
             return None
@@ -98,14 +179,16 @@ def extract_reaction_transformation_pattern_smarts(
         processed_reaction_reactant_compound_smiles_strings = [
             processed_reaction_reactant_compound_smiles
             for processed_reaction_reactant_compound_smiles in [
-                process_reaction_compound_smiles(
-                    compound_smiles=reaction_reactant_compound_smiles
+                process_compound_smiles(
+                    compound_smiles=reaction_reactant_compound_smiles,
+                    logger=logger
                 ) for reaction_reactant_compound_smiles in reaction_reactant_compound_smiles_strings
-            ] if processed_reaction_reactant_compound_smiles is not None
+            ]
         ]
 
-        processed_reaction_product_compound_smiles = process_reaction_compound_smiles(
-            compound_smiles=reaction_product_compound_smiles_strings[0]
+        processed_reaction_product_compound_smiles = process_compound_smiles(
+            compound_smiles=reaction_product_compound_smiles_strings[0],
+            logger=logger
         )
 
         if (
@@ -114,10 +197,12 @@ def extract_reaction_transformation_pattern_smarts(
         ):
             return None
 
-        reaction_transformation_pattern_outcomes_smiles_strings = (
-            ReactionReactivityUtility.apply_retro_template_using_rdchiral(
-                retro_template_smarts=reaction_transformation_pattern_smarts,
-                compound_smiles=processed_reaction_product_compound_smiles
+        reaction_transformation_pattern_outcomes_smiles_strings = rdchiralRun(
+            rxn=rdchiralReaction(
+                reaction_smarts=reaction_transformation_pattern_smarts
+            ),
+            reactants=rdchiralReactants(
+                reactant_smiles=processed_reaction_product_compound_smiles
             )
         )
 
@@ -129,8 +214,9 @@ def extract_reaction_transformation_pattern_smarts(
             for reaction_transformation_pattern_outcome_smiles in reaction_transformation_pattern_outcomes_smiles.split(
                 sep="."
             ):
-                processed_reaction_transformation_pattern_outcome_smiles = process_reaction_compound_smiles(
-                    compound_smiles=reaction_transformation_pattern_outcome_smiles
+                processed_reaction_transformation_pattern_outcome_smiles = process_compound_smiles(
+                    compound_smiles=reaction_transformation_pattern_outcome_smiles,
+                    logger=logger
                 )
 
                 if processed_reaction_transformation_pattern_outcome_smiles is not None:
@@ -150,15 +236,16 @@ def extract_reaction_transformation_pattern_smarts(
                 reaction_reactant_compound_patterns_smarts_strings,
                 reaction_spectator_compound_patterns_smarts_strings,
                 reaction_product_compound_patterns_smarts_strings,
-            ) = ReactionCompoundUtility.extract_compound_smiles_or_smarts(
+            ) = extract_compound_smiles_or_smarts(
                 reaction_smiles_or_smarts=reaction_transformation_pattern_smarts
             )
 
             processed_reaction_reactant_compound_patterns_smarts_strings = [
                 processed_reaction_reactant_compound_patterns_smarts
                 for processed_reaction_reactant_compound_patterns_smarts in [
-                    process_reaction_compound_pattern_smarts(
-                        compound_pattern_smarts=reaction_reactant_compound_patterns_smarts
+                    process_compound_pattern_smarts(
+                        compound_pattern_smarts=reaction_reactant_compound_patterns_smarts,
+                        logger=logger
                     ) for reaction_reactant_compound_patterns_smarts
                     in reaction_reactant_compound_patterns_smarts_strings
                 ] if processed_reaction_reactant_compound_patterns_smarts is not None
@@ -167,8 +254,9 @@ def extract_reaction_transformation_pattern_smarts(
             processed_reaction_spectator_compound_patterns_smarts_strings = [
                 processed_reaction_spectator_compound_patterns_smarts
                 for processed_reaction_spectator_compound_patterns_smarts in [
-                    process_reaction_compound_pattern_smarts(
-                        compound_pattern_smarts=reaction_spectator_compound_patterns_smarts
+                    process_compound_pattern_smarts(
+                        compound_pattern_smarts=reaction_spectator_compound_patterns_smarts,
+                        logger=logger
                     ) for reaction_spectator_compound_patterns_smarts
                     in reaction_spectator_compound_patterns_smarts_strings
                 ] if processed_reaction_spectator_compound_patterns_smarts is not None
@@ -177,19 +265,20 @@ def extract_reaction_transformation_pattern_smarts(
             processed_reaction_product_compound_patterns_smarts_strings = [
                 processed_reaction_product_compound_patterns_smarts
                 for processed_reaction_product_compound_patterns_smarts in [
-                    process_reaction_compound_pattern_smarts(
-                        compound_pattern_smarts=reaction_product_compound_patterns_smarts
+                    process_compound_pattern_smarts(
+                        compound_pattern_smarts=reaction_product_compound_patterns_smarts,
+                        logger=logger
                     ) for reaction_product_compound_patterns_smarts
                     in reaction_product_compound_patterns_smarts_strings
                 ] if processed_reaction_product_compound_patterns_smarts is not None
             ]
 
-            return (
+            return [(
                 reaction_transformation_pattern_smarts,
                 processed_reaction_reactant_compound_patterns_smarts_strings,
                 processed_reaction_spectator_compound_patterns_smarts_strings,
                 processed_reaction_product_compound_patterns_smarts_strings,
-            )
+            ), ]
 
         else:
             return None
@@ -213,12 +302,85 @@ def extract_reaction_transformation_pattern_smarts(
         return None
 
 
+def extract_reaction_transformation_pattern_smarts_process(
+        process_queue: Queue,
+        mapped_reaction_smiles: str,
+        logger: Optional[Logger] = None
+) -> Optional[List[Tuple[str, List[str], List[str], List[str]]]]:
+    """
+    Extract the transformation pattern SMARTS string from a chemical reaction SMILES string.
+
+    :parameter process_queue: The process queue.
+    :parameter mapped_reaction_smiles: The SMILES string of the mapped chemical reaction.
+    :parameter logger: The logger. The value `None` indicates that the logger should not be utilized.
+
+    :returns: The transformation pattern SMARTS string extracted from the chemical reaction SMILES string.
+    """
+
+    processed_reaction_pattern_smarts = None
+
+    try:
+        processed_reaction_pattern_smarts = extract_reaction_transformation_pattern_smarts(
+            mapped_reaction_smiles=mapped_reaction_smiles,
+            logger=logger
+        )
+
+    except:
+        processed_reaction_pattern_smarts = None
+
+    finally:
+        process_queue.put(
+            processed_reaction_pattern_smarts
+        )
+
+
+def extract_reaction_transformation_pattern_smarts_process_with_timeout(
+    mapped_reaction_smiles: str,
+    logger: Optional[Logger] = None,
+    timeout_period_in_s: int = 10
+) -> Optional[List[Tuple[str, List[str], List[str], List[str]]]]:
+    """
+    Extract the transformation pattern SMARTS string from a chemical reaction SMILES string.
+
+    :parameter mapped_reaction_smiles: The SMILES string of the mapped chemical reaction.
+    :parameter logger: The logger. The value `None` indicates that the logger should not be utilized.
+    :parameter timeout_period_in_s: The timeout period in seconds.
+
+    :returns: The transformation pattern SMARTS string extracted from the chemical reaction SMILES string.
+    """
+
+    process_queue = Queue()
+
+    process = Process(
+        target=extract_reaction_transformation_pattern_smarts_process,
+        args=(
+            process_queue,
+            mapped_reaction_smiles,
+            logger
+        )
+    )
+
+    process.start()
+
+    process.join(
+        timeout=timeout_period_in_s
+    )
+
+    if process.is_alive():
+        process.terminate()
+        process.join()
+
+        return None
+
+    return process_queue.get()
+
+
 def extract_reaction_transformation_pattern_smarts_strings(
         mapped_reaction_smiles_strings: Iterable[str],
         timeout_period_in_s: int = 10,
         number_of_processes: int = 1,
         logger: Optional[Logger] = None
-) -> List[Optional[Tuple[str, List[str], List[str], List[str]]]]:
+) -> List[Optional[List[Tuple[str, List[str], List[str], List[str]]]]]:
     """
     Extract the transformation pattern SMARTS strings from the chemical reaction SMILES strings.
 
@@ -240,20 +402,19 @@ def extract_reaction_transformation_pattern_smarts_strings(
         for mapped_reaction_smiles in mapped_reaction_smiles_strings:
             async_results.append(
                 process_pool.apply_async(
-                    func=extract_reaction_transformation_pattern_smarts,
-                    args=(mapped_reaction_smiles, ),
-                    kwds={
-                        "logger": logger
-                    }
+                    func=extract_reaction_transformation_pattern_smarts_process_with_timeout,
+                    args=(
+                        mapped_reaction_smiles,
+                        logger,
+                        timeout_period_in_s,
+                    )
                 )
             )
 
         for async_result in async_results:
             try:
                 processed_reaction_pattern_smarts_strings.append(
-                    async_result.get(
-                        timeout=timeout_period_in_s
-                    )
+                    async_result.get()
                 )
 
             except Exception as exception_handle:
@@ -306,6 +467,7 @@ def get_script_arguments() -> Namespace:
     argument_parser.add_argument(
         "-du",
         "--database_user",
+        default="admin",
         type=str,
         help="The user of the database."
     )
@@ -323,15 +485,7 @@ def get_script_arguments() -> Namespace:
         "--number_of_processes",
         default=1,
         type=int,
-        help="The number of the processes, if relevant."
-    )
-
-    argument_parser.add_argument(
-        "-bs",
-        "--batch_size",
-        default=10,
-        type=int,
-        help="The size of the batch, if relevant."
+        help="The number of processes, if relevant."
     )
 
     return argument_parser.parse_args()
