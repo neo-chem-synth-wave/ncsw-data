@@ -1,4 +1,4 @@
-""" The ``use_case.scripts`` directory ``d_update_workbench_data`` script. """
+""" The ``case_study.scripts`` directory ``d_update_workbench_data`` script. """
 
 from argparse import ArgumentParser, Namespace
 from functools import partial

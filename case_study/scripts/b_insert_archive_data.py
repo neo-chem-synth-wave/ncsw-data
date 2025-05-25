@@ -1,4 +1,4 @@
-""" The ``use_case.scripts`` directory ``b_insert_archive_data`` script. """
+""" The ``case_study.scripts`` directory ``b_insert_archive_data`` script. """
 
 from argparse import ArgumentParser, Namespace
 from logging import Formatter, Logger, StreamHandler, getLogger

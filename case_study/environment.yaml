@@ -1,4 +1,4 @@
-name: ncsw-data-use-case-env
+name: ncsw-data-case-study-env
 
 channels:
   - conda-forge

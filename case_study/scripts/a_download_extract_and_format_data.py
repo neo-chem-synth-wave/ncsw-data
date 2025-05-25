@@ -1,4 +1,4 @@
-""" The ``use_case.scripts`` directory ``a_download_extract_and_format_data`` script. """
+""" The ``case_study.scripts`` directory ``a_download_extract_and_format_data`` script. """
 
 from argparse import ArgumentParser, Namespace
 from datetime import datetime

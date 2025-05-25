@@ -1,4 +1,4 @@
-""" The ``use_case.scripts`` directory ``c_migrate_archive_to_workbench_data`` script. """
+""" The ``case_study.scripts`` directory ``c_migrate_archive_to_workbench_data`` script. """
 
 from argparse import ArgumentParser, Namespace
 from functools import partial
