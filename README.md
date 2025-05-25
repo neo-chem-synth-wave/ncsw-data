@@ -36,8 +36,8 @@ pip install .
 
 ## Utilization
 The purpose of the [case_study](/case_study) directory is to illustrate how to download, extract, and format the
-preferred data and subsequently construct, manage, and query a version of the Computer-assisted Chemical Synthesis
-(CaCS) database that reflects the current state of computer-assisted chemical synthesis data.
+relevant data and subsequently construct, manage, and query a version of the Computer-assisted Chemical Synthesis (CaCS)
+database that reflects the current state of computer-assisted chemical synthesis data.
 
 First, the [a_download_extract_and_format_data](/case_study/scripts/a_download_extract_and_format_data.py) script can be
 utilized as follows:
@@ -55,8 +55,8 @@ Next, the [b_insert_archive_data](/case_study/scripts/b_insert_archive_data.py) 
 ```shell
 python use_case/scripts/b_insert_archive_data.py \
   --sqlite_database_file_path "sqlite:////path/to/the/cacs_db.sqlite" \
-  --input_csv_file_path "/path/to/the/input_csv_file.csv" \
-  --smiles_or_smarts_column_name "reaction_smiles" \
+  --input_csv_file_path "/path/to/the/xxx_uspto_v_50k_by_20171116_coley_c_w_et_al.csv" \
+  --smiles_or_smarts_column_name "rxn_smiles" \
   --file_name_column_name "file_name" \
   --data_source_category "reaction" \
   --data_source_name "uspto" \
@@ -81,7 +81,7 @@ python use_case/scripts/d_update_workbench_data.py \
 ```
 
 The relevant [SQLite](https://www.sqlite.org) scripts and [Jupyter](https://jupyter.org) notebooks of the case study
-illustrating the utilization of the CaCS database can be found in the [notebooks](/case_study/notebooks) directory.
+illustrating the querying of the CaCS database can be found in the [notebooks](/case_study/notebooks) directory.
 
 
 ## License Information
