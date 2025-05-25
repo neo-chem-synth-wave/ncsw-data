@@ -34,11 +34,61 @@ pip install .
 ```
 
 
+## Utilization
+The purpose of the [case_study](/case_study) directory is to illustrate how to download, extract, and format the
+preferred data and subsequently construct, manage, and query a version of the Computer-assisted Chemical Synthesis
+(CaCS) database that reflects the current state of computer-assisted chemical synthesis data.
+
+First, the [a_download_extract_and_format_data](/case_study/scripts/a_download_extract_and_format_data.py) script can be
+utilized as follows:
+
+```shell
+python use_case/scripts/a_download_extract_and_format_data.py \
+  --data_source_category "reaction" \
+  --data_source_name "uspto" \
+  --data_source_version "v_50k_by_20171116_coley_c_w_et_al" \
+  --output_directory_path "/path/to/the/output/directory"
+```
+
+Next, the [b_insert_archive_data](/case_study/scripts/b_insert_archive_data.py) script can be utilized as follows:
+
+```shell
+python use_case/scripts/b_insert_archive_data.py \
+  --sqlite_database_file_path "sqlite:////path/to/the/cacs_db.sqlite" \
+  --input_csv_file_path "/path/to/the/input_csv_file.csv" \
+  --smiles_or_smarts_column_name "reaction_smiles" \
+  --file_name_column_name "file_name" \
+  --data_source_category "reaction" \
+  --data_source_name "uspto" \
+  --data_source_version "v_50k_by_20171116_coley_c_w_et_al"
+```
+
+Next, the [c_migrate_archive_to_workbench_data](/case_study/scripts/c_migrate_archive_to_workbench_data.py) script can
+be utilized as follows:
+
+```shell
+python use_case/scripts/c_migrate_archive_to_workbench_data.py \
+  --sqlite_database_file_path "sqlite:////path/to/the/cacs_db.sqlite" \
+  --data_source_category "reaction"
+```
+
+Ultimately, the [d_update_workbench_data](/case_study/scripts/d_update_workbench_data.py) script can be utilized as
+follows:
+
+```shell
+python use_case/scripts/d_update_workbench_data.py \
+  --sqlite_database_file_path "sqlite:////path/to/the/cacs_db.sqlite"
+```
+
+The relevant [SQLite](https://www.sqlite.org) scripts and [Jupyter](https://jupyter.org) notebooks of the case study
+illustrating the utilization of the CaCS database can be found in the [notebooks](/case_study/notebooks) directory.
+
+
 ## License Information
-The contents of this repository are published under the [MIT](/LICENSE) license. Please refer to individual references
-for more details regarding the license information of external resources utilized within the repository.
+The contents of this repository are published under the [MIT](/LICENSE) license. Please refer to the individual
+references for more details regarding the license information of external resources utilized within the repository.
 
 
 ## Contact
-If you are interested in contributing to this repository by reporting bugs, suggesting improvements, or submitting
+If you are interested in contributing to this research project by reporting bugs, suggesting improvements, or submitting
 feedback, feel free to do so using [GitHub Issues](https://github.com/neo-chem-synth-wave/ncsw-data/issues).
