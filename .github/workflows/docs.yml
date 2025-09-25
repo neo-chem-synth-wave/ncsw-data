@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.9"
           cache: "pip"
 
       - name: Install docs dependencies
@@ -43,7 +43,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: documentation
+      name: sphinx-documentation
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
