@@ -1,4 +1,4 @@
-""" The ``ncsw_data.source.compound_pattern.rdkit_.utility`` package ``download`` module. """
+""" The ``ncsw_data.source.compound_pattern.rdkit.utility`` package ``download`` module. """
 
 from os import PathLike
 from typing import Union

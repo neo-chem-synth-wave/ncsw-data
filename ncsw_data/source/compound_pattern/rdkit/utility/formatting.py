@@ -1,4 +1,4 @@
-""" The ``ncsw_data.source.compound_pattern.rdkit_.utility`` package ``formatting`` module. """
+""" The ``ncsw_data.source.compound_pattern.rdkit.utility`` package ``formatting`` module. """
 
 from ast import literal_eval
 from datetime import datetime

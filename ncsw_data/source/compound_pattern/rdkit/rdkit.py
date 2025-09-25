@@ -1,11 +1,11 @@
-""" The ``ncsw_data.source.compound_pattern.rdkit_`` package ``rdkit_`` module. """
+""" The ``ncsw_data.source.compound_pattern.rdkit`` package ``rdkit`` module. """
 
 from os import PathLike
 from typing import Dict, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-from ncsw_data.source.compound_pattern.rdkit_.utility.download import RDKitCompoundPatternDatasetDownloadUtility
-from ncsw_data.source.compound_pattern.rdkit_.utility.formatting import RDKitCompoundPatternDatasetFormattingUtility
+from ncsw_data.source.compound_pattern.rdkit.utility.download import RDKitCompoundPatternDatasetDownloadUtility
+from ncsw_data.source.compound_pattern.rdkit.utility.formatting import RDKitCompoundPatternDatasetFormattingUtility
 
 
 class RDKitCompoundPatternDataset(DataSourceBase):

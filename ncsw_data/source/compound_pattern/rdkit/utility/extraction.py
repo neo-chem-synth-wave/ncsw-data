@@ -1,4 +1,4 @@
-""" The ``ncsw_data.source.compound_pattern.rdkit_.utility`` package ``extraction`` module. """
+""" The ``ncsw_data.source.compound_pattern.rdkit.utility`` package ``extraction`` module. """
 
 
 class RDKitCompoundPatternDatasetExtractionUtility:

@@ -5,7 +5,7 @@ from os import PathLike
 from typing import Dict, List, Optional, Union
 
 from ncsw_data.source.base.base import DataSourceBase
-from ncsw_data.source.compound_pattern.rdkit_.rdkit_ import RDKitCompoundPatternDataset
+from ncsw_data.source.compound_pattern.rdkit.rdkit import RDKitCompoundPatternDataset
 
 
 class CompoundPatternDataSource(DataSourceBase):
