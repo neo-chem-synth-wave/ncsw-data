@@ -1,0 +1,17 @@
+cff-version: 1.0.0
+message: "If you use this repository, please cite it as below."
+title: "neo-chem-synth-wave/ncsw-data"
+url: "https://github.com/neo-chem-synth-wave/ncsw-data"
+
+authors:
+    - family-names: "Hasic"
+      given-names: "Haris"
+
+preferred-citation:
+    type: software
+    title: "neo-chem-synth-wave/ncsw-data"
+    authors:
+        - family-names: "Hasic"
+          given-names: "Haris"
+    url: "https://github.com/neo-chem-synth-wave/ncsw-data"
+    version: "2015.9.1"
