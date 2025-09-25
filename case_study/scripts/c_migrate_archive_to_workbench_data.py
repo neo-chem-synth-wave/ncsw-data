@@ -10,7 +10,7 @@ from rdkit.Chem import MolFromSmarts, MolFromSmiles, MolToSmarts, MolToSmiles, S
 
 from rxnmapper.batched_mapper import BatchedMapper
 
-from ncsw_data.storage.cacs.sqlite_ import CaCSSQLiteDatabase
+from ncsw_data.storage.cacs.sqlite_db import CaCSSQLiteDatabase
 
 
 ########################################################################################################################

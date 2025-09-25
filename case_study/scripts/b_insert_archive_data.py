@@ -5,7 +5,7 @@ from logging import Formatter, Logger, StreamHandler, getLogger
 
 from pandas import read_csv
 
-from ncsw_data.storage.cacs.sqlite_ import CaCSSQLiteDatabase
+from ncsw_data.storage.cacs.sqlite_db import CaCSSQLiteDatabase
 
 
 def get_script_arguments() -> Namespace:

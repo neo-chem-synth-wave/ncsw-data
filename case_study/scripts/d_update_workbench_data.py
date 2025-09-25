@@ -13,7 +13,7 @@ from rdchiral.template_extractor import extract_from_reaction
 
 from rdkit.Chem import MolFromSmarts, MolFromSmiles, MolToSmarts, MolToSmiles, SanitizeMol
 
-from ncsw_data.storage.cacs.sqlite_ import CaCSSQLiteDatabase
+from ncsw_data.storage.cacs.sqlite_db import CaCSSQLiteDatabase
 
 
 ########################################################################################################################
