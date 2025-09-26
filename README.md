@@ -360,6 +360,12 @@ The full list of script arguments is as follows:
 - `--number_of_processes` or `-nop` → The number of processes, if relevant.
 
 
+## The CaCS Database
+The entity relationship of the CaCS database can be illustrated as follows:
+
+![cacs_database_entity_relationship_diagram.png](figures/cacs_database_entity_relationship_diagram.png)
+
+
 ## License Information
 The contents of this repository are published under the [MIT](/LICENSE) license. Please refer to the individual references for more details regarding the license information of external resources utilized within the repository.
 
