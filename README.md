@@ -17,14 +17,14 @@ The utilization instructions of this repository are structured as follows:
 
 - [Installation of the Package](#installation-of-the-package)
 - [Utilization of the Package](#utilization-of-the-package)
-- [Utilization of the Scripts and Notebooks](#utilization-of-the-scripts-and-notebooks)
+- [Utilization of the Scripts and Notebooks](#utilization-of-the-notebooks-and-scripts)
 
 
 ### Installation of the Package
 The [ncsw_data](/ncsw_data) package can be installed in an existing environment using the [pip](https://pip.pypa.io) command as follows:
 
 ```shell
-pip install ncsw_data
+pip install ncsw-data
 ```
 
 A local environment can be created using the [git](https://git-scm.com) and [conda](https://conda.io) commands as follows:
@@ -141,8 +141,8 @@ compound_data_source.format(
 
 
 #### Storage
-The [storage](/ncsw_data/storage) sub-package supports the creation, management, and querying of the Computer-assisted Chemical Synthesis (CaCS) SQLite database.
-The database can be created or loaded as follows:
+The [storage](/ncsw_data/storage) sub-package supports the creation, management, and querying of the Computer-assisted Chemical Synthesis (CaCS) database.
+The CaCS database can be created or loaded as follows:
 
 ```python
 from ncsw_data.storage.cacs.sqlite_db import CaCSSQLiteDatabase
@@ -218,38 +218,59 @@ The data can be queried from the archive and workbench tables of the CaCS databa
 
 ```python
 archive_compounds = cacs_sqlite_db.select_archive_compounds()
-archive_compound_patterns = cacs_sqlite_db.select_archive_compound_patterns()
-archive_reactions = cacs_sqlite_db.select_archive_reactions()
-archive_reaction_patterns = cacs_sqlite_db.select_archive_reaction_patterns()
 
-workbench_compounds = cacs_sqlite_db.select_workbench_compounds()
-workbench_compound_patterns = cacs_sqlite_db.select_workbench_compound_patterns()
+for acs in archive_compounds:
+    for ac in acs:
+        print(ac.smiles)
+
 workbench_reactions = cacs_sqlite_db.select_workbench_reactions()
-workbench_reaction_patterns = cacs_sqlite_db.select_workbench_reaction_patterns()
+
+for wrs in workbench_reactions:
+    for wr in wrs:
+        print(wr.smiles)
+        print(wr.workbench_reactant_compounds)
+        print(wr.workbench_spectator_compounds)
+        print(wr.workbench_product_compounds)
 ```
 
 The chemical synthesis route data for a specified target chemical compound can be queried as follows:
 
 ```python
-cacs_sqlite_db.select_reversed_synthesis_routes(
+target_compound_synthesis_routes = cacs_sqlite_db.select_reversed_synthesis_routes(
     wc_smiles=target_compound_smiles
 )
+
+for target_compound_synthesis_route in target_compound_synthesis_routes:
+    print(target_compound_synthesis_route)
 ```
 
 A user-specified query can be executed as follows:
 
 ```python
-cacs_sqlite_db.execute_select_statement(
-    select_statement_text="SELECT * FROM archive_compound;"
+select_statement_result = cacs_sqlite_db.execute_select_statement(
+    select_statement_text="""
+        SELECT COUNT(*)
+        FROM workbench_reaction_transformation_pattern;
+    """
 )
+
+print(select_statement_result.fetchone())
 ```
 
 
-### Utilization of the Scripts and Notebooks
-The purpose of the [case_study](/case_study) directory is to illustrate how to download, extract, and format the relevant data and subsequently construct, manage, and query a version of the Computer-assisted Chemical Synthesis (CaCS) database that reflects the current state of computer-assisted chemical synthesis data.
+### Utilization of the Notebooks and Scripts
+The [case_study](/case_study) directory consists of the following subdirectories:
+
+- [Notebook](#notebooks)
+- [Scripts](#scripts)
+
+
+#### Notebooks
+The purpose of the [notebooks](/case_study/notebooks) directory is to illustrate how to utilize the CaCS database to analyze the current state of the computer-assisted chemical synthesis data.
 
 
 #### Scripts
+The purpose of the [scripts](/case_study/scripts) directory is to illustrate how to download, extract, and format the relevant data and subsequently construct, manage, and query the CaCS database.
 First, the [a_download_extract_and_format_data](/case_study/scripts/a_download_extract_and_format_data.py) script can be utilized as follows:
 
 ```shell
@@ -337,10 +358,6 @@ The full list of script arguments is as follows:
 - `--database_user` or `-du` → The user of the database.
 - `--database_chunk_limit` or `-dcl` → The chunk limit of the database.
 - `--number_of_processes` or `-nop` → The number of processes, if relevant.
-
-
-#### Notebooks
-The relevant [SQLite](https://www.sqlite.org) scripts and [Jupyter](https://jupyter.org) notebooks of the case study illustrating the querying of the CaCS database can be found in the [notebooks](/case_study/notebooks) directory.
 
 
 ## License Information
